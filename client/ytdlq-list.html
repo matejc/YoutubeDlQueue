@@ -1,0 +1,208 @@
+<link rel="import" href="components/core-list/core-list.html">
+<link rel="import" href="components/core-animation/core-animation.html">
+<link rel="import" href="components/polymer-fontawesome/polymer-fontawesome.html">
+
+<polymer-element name="ytdlq-list" attributes="setData focus accessToken">
+  <template>
+    <style>
+    #container {
+      padding-top: 0.3em;
+    }
+    .item {
+      color: #4059a9;
+      padding: 0.2em;
+    }
+    .item.selected {
+      background: #4059a9;
+      color: white;
+    }
+    .item:hover {
+      background: #f7f7f7;
+    }
+    .item.selected:hover {
+      background: #7089d9;
+    }
+    core-list {
+      width: 450px;
+      height: 400px;
+    }
+    .options {
+      float: right;
+    }
+    div.options > font-awesome.selected {
+      color: #40c979;
+    }
+    font-awesome:active {
+      color: red;
+    }
+    .youtubedl_id {
+      color: grey;
+      font-size: 60%;
+    }
+    paper-icon-button {
+      width: 20px;
+      height: 20px;
+    }
+    </style>
+    <div id="container">
+      <core-list id="list" data="{{data}}" height="32" selectionEnabled on-keydown="{{keydown}}" on-core-activate="{{activate}}" flex>
+        <template>
+          <div class="item {{ {selected: selected} | tokenList }}" data-index="{{index}}">
+            <div class="title">
+              <template if="{{model.state == 'done'}}">
+                <font-awesome icon="check" size="lg"></font-awesome>
+              </template>
+              <template if="{{model.state == 'timeout'}}">
+                <font-awesome icon="clock-o" size="lg"></font-awesome>
+              </template>
+              <template if="{{model.state == 'error'}}">
+                <font-awesome icon="exclamation" size="lg"></font-awesome>
+              </template>
+              <template if="{{model.state == 'working'}}">
+                <font-awesome icon="cog" size="lg"></font-awesome>
+              </template>
+              <span>{{model.title}}</span>
+              <template if="{{model.state !== 'working'}}">
+                <div class="options" data-youtubedl_id="{{model.youtubedl_id}}" data-index="{{index}}">
+                  <font-awesome icon="{{options[0].type}}" size="lg" class="{{ {selected: optionIndex===0 && selected} | tokenList }}" data-index="0" on-click="{{keydown}}"></font-awesome>
+                  <font-awesome icon="{{options[1].type}}" size="lg" class="{{ {selected: optionIndex===1 && selected} | tokenList }}" data-index="1" on-click="{{keydown}}"></font-awesome>
+                  <font-awesome icon="{{options[2].type}}" size="lg" class="{{ {selected: optionIndex===2 && selected} | tokenList }}" data-index="2" on-click="{{keydown}}"></font-awesome>
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
+      </core-list>
+    </div>
+    <core-ajax
+      id="play"
+      method="GET"
+      handleAs="json"
+      headers='{"Authorization": "{{accessToken}}"}'
+      contentType="application/json"
+      on-core-error="{{onAjaxError}}"
+      on-core-response="{{response}}"></core-ajax>
+  </template>
+  <script>
+  Polymer({
+    ready: function() {
+      this.unfocusCallback = function() {};
+      this.selectedIndex = 0;
+      this.optionIndex = 0;
+      this.options = [
+        { type: "play" },
+        { type: "link" },
+        { type: "download" }
+      ];
+    },
+    onAjaxError: function(e) {
+      this.fire('core-signal', {name: "message", data: e.detail.response.response.error.message});
+    },
+    response: function(e) {
+      this.fire('core-signal', {name: "message", data: e.detail.response});
+    },
+    focus: function(cb) {
+      this.hasFocus = true;
+      this.$.list.focus();
+      this.selectedIndex = 0;
+      this.$.list.setItemSelected(this.selectedIndex, true);
+      for (var i in this.data) {
+        if (this.selectedIndex != i) {
+          this.$.list.setItemSelected(i, false);
+        }
+      }
+      this.unfocusCallback = cb;
+    },
+    unfocus: function() {
+      this.hasFocus = false;
+      this.$.list.clearSelection();
+      this.unfocusCallback();
+    },
+    keydown: function(e) {
+      if (e.button === 0) {
+        this.optionIndex = parseInt(e.target.getAttribute("data-index"));
+        // this.$.list.setItemSelected(this.selectedIndex, false);
+        this.selectedIndex = parseInt(e.target.parentNode.getAttribute("data-index"));
+      }
+      if (e.keyCode === 13 || e.button === 0) {
+        e.preventDefault();
+        if (this.data[this.selectedIndex].state === 'working') return;
+        switch (this.options[this.optionIndex].type) {
+          case "play":
+            this.$.play.url="/api/gblasters/play/"+this.data[this.selectedIndex].youtubedl_id;
+            this.$.play.go();
+            break;
+          case "link":
+            window.open(this.data[this.selectedIndex].url, '_blank');
+            break;
+          case "download":
+            var url="/api/youtubedls/download/"+this.data[this.selectedIndex].youtubedl_id+"?access_token="+this.accessToken;
+            window.open(url);
+            break;
+        }
+      } else if (_.contains([9, 40], e.keyCode)) {  // next
+        e.preventDefault();
+        this.$.list.setItemSelected(this.selectedIndex, false);
+        if (this.selectedIndex == this.data.length-1) {
+          this.unfocus();
+        } else {
+          this.$.list.setItemSelected(++this.selectedIndex, true);
+        }
+      } else if (_.contains([38], e.keyCode)) {  // prev
+        e.preventDefault();
+        this.$.list.setItemSelected(this.selectedIndex, false);
+        if (this.selectedIndex == 0) {
+          this.unfocus();
+        } else {
+          this.$.list.setItemSelected(--this.selectedIndex, true);
+        }
+      } else if (_.contains([37], e.keyCode)) {  // left
+        e.preventDefault();
+        this.optionIndex = this.optionIndex==0?0:this.optionIndex-1;
+      } else if (_.contains([39], e.keyCode)) {  // right
+        e.preventDefault();
+        this.optionIndex = this.optionIndex==2?2:this.optionIndex+1;
+      } else if (_.contains([27], e.keyCode)) {
+        e.preventDefault();
+        this.unfocus();
+      }
+    },
+    activate: function(e) {
+      this.selectedIndex = e.detail.item.getAttribute("data-index");
+      for (var i in this.data) {
+        if (this.selectedIndex != i) {
+          this.$.list.setItemSelected(i, false);
+        }
+      }
+    },
+    setData: function(data, cb) {
+      var elem = this.$.container;
+      var show = !_.isEmpty(data);
+      if (_.isEqual(data, this.data)) {
+        return cb();
+      }
+      var anim, onFinish;
+      this.animating = true;
+      if (show) {
+        this.data = data;
+        anim = new Animation(elem, [{opacity: "0", display: 'none'}, {opacity: "1", display: 'flex'}], {fill: "forwards", duration: 500, easing: "ease"});
+        this.showing = true;
+        onFinish = function() {
+          this.animating = false;
+          cb();
+        }.bind(this);
+      } else {
+        anim = new Animation(elem, [{opacity: "1", display: 'flex'}, {opacity: "0", display: 'none'}], {fill: "forwards", duration: 500, easing: "ease"});
+        this.showing = false;
+        onFinish = function() {
+          this.animating = false;
+          this.data = data;
+          cb();
+        }.bind(this);
+      }
+      var player = document.timeline.play(anim);
+      player.onfinish = onFinish;
+    }
+  });
+  </script>
+</polymer-element>

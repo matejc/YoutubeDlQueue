@@ -1,0 +1,174 @@
+<link rel="import" href="ytdlq-login.html">
+<link rel="import" href="components/polymer-fontawesome/polymer-fontawesome.html">
+
+<polymer-element name="ytdlq-panel" attributes="accessToken pingResponseCode">
+  <template>
+    <style>
+      #container {
+        width: 5em;
+        height: 21.5em;
+        position: absolute;
+        top: 3em;
+        left: 0;
+        -webkit-transition: 200ms ease;
+        -moz-transition: 200ms ease;
+        -o-transition: 200ms ease;
+        transition: 200ms ease;
+      }
+      #container.shadow {
+        -moz-box-shadow:    2px 2px 3px 4px #ddd;
+        -webkit-box-shadow: 2px 2px 3px 4px #ddd;
+        box-shadow:         2px 2px 3px 4px #ddd;
+      }
+      #container.login {
+        -webkit-transition: 200ms ease;
+        -moz-transition: 200ms ease;
+        -o-transition: 200ms ease;
+        transition: 200ms ease;
+        width: 15em;
+        height: 12em;
+      }
+      #options {
+        position: absolute;
+        display: block;
+        width: 1em;
+        color: #4059a9;
+        top: 1em;
+        left: 1em;
+        -webkit-transition: 200ms ease;
+        -moz-transition: 200ms ease;
+        -o-transition: 200ms ease;
+        transition: 200ms ease;
+      }
+      #options /deep/ .fa {
+        margin-top: 0.25em;
+      }
+      #options /deep/ .fa:hover {
+        color: #40c979;
+      }
+      #options /deep/ .fa:active {
+        color: red;
+      }
+      #options.login {
+        left: -3em;
+        -webkit-transition: 200ms ease;
+        -moz-transition: 200ms ease;
+        -o-transition: 200ms ease;
+        transition: 200ms ease;
+      }
+      #options > font-awesome {
+        padding: 0.1em;
+      }
+      #login {
+        position: absolute;
+        display: block;
+        width: 1em;
+        color: #4059a9;
+        /*top: 1em;*/
+        left: -15em;
+        -webkit-transition: 200ms ease;
+        -moz-transition: 200ms ease;
+        -o-transition: 200ms ease;
+        transition: 200ms ease;
+      }
+      #login.login {
+        left: 0;
+        -webkit-transition: 200ms ease;
+        -moz-transition: 200ms ease;
+        -o-transition: 200ms ease;
+        transition: 200ms ease;
+      }
+    </style>
+
+    <div id="container" class="shadow {{ {login: showLoginForm} | tokenList }}">
+
+      <ytdlq-login id="login" class="{{ {login: showLoginForm} | tokenList }}"></ytdlq-login>
+
+      <div id="options" class="{{ {login: showLoginForm} | tokenList }}">
+        <font-awesome icon="volume-up" size="3x" on-click="{{onVolumeUp}}"></font-awesome>
+        <font-awesome icon="volume-down" size="3x" on-click="{{onVolumeDown}}"></font-awesome>
+        <font-awesome icon="volume-off" size="3x" on-click="{{onVolumeMute}}"></font-awesome>
+        <font-awesome icon="stop" size="3x" on-click="{{onStop}}"></font-awesome>
+        <font-awesome icon="sign-out" size="3x" on-click="{{onSignOut}}"></font-awesome>
+      </div>
+
+    </div>
+
+    <core-signals on-core-signal-access-token="{{onAccessToken}}"></core-signals>
+
+    <core-ajax
+      id="stop"
+      method="GET"
+      handleAs="json"
+      headers='{"Authorization": "{{accessToken}}"}'
+      contentType="application/json"
+      on-core-error="{{onAjaxError}}"
+      on-core-response="{{stopResponse}}"></core-ajax>
+
+    <core-ajax
+      id="logout"
+      method="POST"
+      url="/api/users/logout"
+      headers='{"Authorization": "{{accessToken}}"}'
+      handleAs="json"
+      contentType="application/json"
+      on-core-error="{{onError}}"
+      on-core-response="{{logoutResponse}}"></core-ajax>
+
+    <core-ajax
+      id="volume"
+      method="GET"
+      headers='{"Authorization": "{{accessToken}}"}'
+      handleAs="json"
+      contentType="application/json"
+      on-core-error="{{onError}}"
+      on-core-response="{{volumeResponse}}"></core-ajax>
+  </template>
+  <script>
+  Polymer({
+    ready: function() {
+      this.showLoginForm = true;
+    },
+    observe: {
+      "pingResponseCode": "pingResponse"
+    },
+    pingResponse: function(oldValue, newValue) {
+      this.showLoginForm = newValue == 401;
+    },
+    onStop: function(e) {
+      this.$.stop.url="/api/gblasters/stop";
+      this.$.stop.go();
+    },
+    onVolumeUp: function(e) {
+      this.$.volume.url="/api/gblasters/volume/inc";
+      this.$.volume.go();
+    },
+    onVolumeDown: function(e) {
+      this.$.volume.url="/api/gblasters/volume/dec";
+      this.$.volume.go();
+    },
+    onVolumeMute: function(e) {
+      this.$.volume.url="/api/gblasters/volume/mute";
+      this.$.volume.go();
+    },
+    onSignOut: function(e) {
+      this.$.logout.go();
+    },
+    volumeResponse: function(e) {
+      this.fire('core-signal', {name: "message", data: e.detail.response.action + " (" + e.detail.response.volume + "%)"});
+    },
+    logoutResponse: function(e) {
+      this.fire('core-signal', {name: "access-token", data: ''});
+    },
+    onAccessToken: function(e) {
+      this.showLoginForm = false;
+    },
+    onAjaxError: function(e) {
+      this.fire('core-signal', {name: "message", data: e.detail.response.response.error.message});
+    },
+    stopResponse: function(e) {
+      this.fire('core-signal', {name: "message", data: e.detail.response});
+    }
+  });
+  </script>
+</polymer-element>

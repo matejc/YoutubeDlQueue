@@ -1,0 +1,70 @@
+<link rel="import" href="components/paper-input/paper-input-decorator.html">
+<link rel="import" href="components/core-input/core-input.html">
+<link rel="import" href="components/polymer-fontawesome/polymer-fontawesome.html">
+
+<polymer-element name="ytdlq-login">
+  <template>
+    <style>
+    #container {
+      width: 12em;
+      margin: 0 1.5em 0 1.5em;
+    }
+    font-awesome {
+      display: block;
+      width: 3em;
+      margin: 1em auto 0 auto;
+    }
+    paper-input {
+      width: 12em;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    </style>
+
+    <div id="container">
+      <font-awesome icon="sign-in" size="3x"></font-awesome>
+
+      <paper-input-decorator label="username" on-keydown="{{login}}">
+        <input is="core-input" type="username" value="{{username}}"/>
+      </paper-input-decorator>
+
+      <paper-input-decorator label="password" on-keydown="{{login}}">
+        <input is="core-input" type="password" value="{{password}}"/>
+      </paper-input-decorator>
+    </div>
+
+    <core-ajax
+      id="login"
+      method="POST"
+      url="/api/users/login"
+      handleAs="json"
+      contentType="application/json"
+      on-core-error="{{onError}}"
+      on-core-response="{{loginResponse}}"></core-ajax>
+  </template>
+  <script>
+  Polymer({
+    ready: function() {
+      this.accessToken = "";
+    },
+    loginResponse: function(e) {
+      this.accessToken = e.detail.response.id;
+      this.password = "";
+      this.fire('core-signal', {name: "access-token", data: this.accessToken});
+      // this.$.accessToken.value = this.accessToken;
+    },
+    onError: function(e) {
+      this.fire('core-signal', {name: "message", data: e.detail.response.response.error.message});
+    },
+    login: function(e) {
+      if (e.keyCode === 13) {
+        this.$.login.body = JSON.stringify({
+          username: this.username,
+          password: this.password
+        });
+        this.$.login.go();
+      }
+    }
+  });
+  </script>
+</polymer-element>

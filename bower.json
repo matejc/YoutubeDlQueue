@@ -1,0 +1,13 @@
+{
+  "name": "youtubequeue",
+  "dependencies": {
+    "polymer": "Polymer/polymer#0.5.5",
+    "core-elements": "Polymer/core-elements#0.5.5",
+    "core-signals": "Polymer/core-signals#0.5.5",
+    "paper-elements": "Polymer/paper-elements#0.5.5",
+    "core-animation": "Polymer/core-animation#0.5.5",
+    "underscore": "underscore#1.8.3",
+    "font-awesome": "font-awesome#4.3.0",
+    "polymer-fontawesome": "polymer-fontawesome#1.0.0-beta.2"
+  }
+}

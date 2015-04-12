@@ -1,0 +1,213 @@
+<link rel="import" href="components/paper-input/paper-input.html">
+<link rel="import" href="components/core-collapse/core-collapse.html">
+<link rel="import" href="components/paper-toast/paper-toast.html">
+<link rel="import" href="components/core-localstorage/core-localstorage.html">
+<link rel="import" href="ytdlq-list.html">
+
+<polymer-element name="ytdlq-input" attributes="accessToken">
+  <template>
+    <style>
+    :host {
+      display: block;
+      position: relative;
+      background-color: white;
+      padding: 20px;
+      font-size: 1.2rem;
+      font-weight: 300;
+    }
+    .option {
+      background: white;
+      color: #4059a9;
+    }
+    .option.selected {
+      background: #4059a9;
+      color: white;
+    }
+    paper-input {
+      width: 450px;
+    }
+    ytdlq-list {
+      width: 450px;
+    }
+    span.heading {
+      font-family: 'RobotoDraft', sans-serif;
+      color: #4059a9;
+      font-variant: small-caps;
+      font-size: 300%;
+      display: inline-block;
+    }
+    div.heading {
+      text-align: center;
+    }
+    </style>
+    <div id="container">
+      <div class="heading"><span class="heading">YoutubeDlQueue</span></div>
+      <paper-input id="input" label="Search or enter url (press ESC to refresh)!" on-keydown="{{keydown}}" on-keyup="{{keyup}}" floatingLabel>
+      </paper-input>
+      <core-collapse id="collapse">
+        <template repeat="{{option in listOptions}}">
+          <div class="option {{option.selected ? 'selected':''}}">{{option.title}}</div>
+        </template>
+      </core-collapse>
+      <ytdlq-list id="list" accessToken="{{accessToken}}"></ytdlq-list>
+    </div>
+
+    <core-ajax
+      id="search"
+      method="POST"
+      url="/api/youtubedls/search"
+      headers='{"Authorization": "{{accessToken}}"}'
+      handleAs="json"
+      contentType="application/json"
+      on-core-error="{{onAjaxError}}"
+      on-core-response="{{searchResponse}}"></core-ajax>
+    <core-ajax
+      id="add"
+      method="POST"
+      url="/api/youtubedls/add"
+      headers='{"Authorization": "{{accessToken}}"}'
+      handleAs="json"
+      contentType="application/json"
+      on-core-error="{{onAjaxError}}"
+      on-core-response="{{addResponse}}"></core-ajax>
+    <core-ajax
+      id="stream"
+      method="POST"
+      url="/api/gblasters/stream"
+      handleAs="json"
+      headers='{"Authorization": "{{accessToken}}"}'
+      contentType="application/json"
+      on-core-error="{{onAjaxError}}"
+      on-core-response="{{streamResponse}}"></core-ajax>
+  </template>
+  <script>
+  Polymer({
+    ready: function() {
+      this.selectedOption = 0;
+      this.listOptions = [
+        {name: "search", title: "Search", selected: true},
+        {name: "add", title: "Add URL"},
+        {name: "stream", title: "Play from URL"}
+      ];
+      this.input_value = "";
+      this.persist = [];
+      setInterval((function(){
+        this.go.bind(this)('search');
+      }).bind(this), 2000);
+    },
+    focus: function(e) {
+      this.$.list.unfocus();
+      this.$.input.focus();
+    },
+    addResponse: function(e) {
+      this.persist = [];
+      this.$.input.value = "";
+      this.input_value = "";
+      this.$.list.setData([], (function(){
+        this.go("search");
+      }).bind(this));
+      setTimeout((function(){this.selectNext(0);}).bind(this), 350);
+    },
+    searchResponse: function(e) {
+      this.$.list.setData(e.detail.response, function(){});
+      this.persist = e.detail.response;
+    },
+    streamResponse: function(e) {
+      this.fire('core-signal', {name: "message", data: "Loading stream ..."});
+    },
+    onAjaxError: function(e) {
+      var message = e.detail.response.response.error;
+      if (e.detail.response.statusCode == 401) {
+        message = null;
+      } else if (e.detail.response.statusCode == 400) {
+        message = 'Bad Request';
+      }
+      if (message) {
+        this.fire('core-signal', {name: "message", data: message});
+      }
+    },
+    go: function(option) {
+      switch (option) {
+        case "add":
+          this.$.add.body = JSON.stringify({
+            url: this.input_value
+          });
+          this.input_value = '';
+          this.$.add.go();
+          break;
+        case "search":
+          this.$.search.body = JSON.stringify({
+            text: this.input_value,
+            target: 'local',
+            persist: this.persist
+          });
+          this.$.search.go();
+          break;
+        case "stream":
+          this.$.stream.body = JSON.stringify({
+            url: this.input_value
+          });
+          this.$.stream.go();
+          break;
+        default:
+          throw new Error('Unknown Option');
+      }
+    },
+    keydown: function(e) {
+      if (!this.$.collapse.opened) {
+        if (_.contains([38, 13], e.keyCode)) {
+          e.preventDefault();
+          return;
+        } else if (_.contains([9, 40], e.keyCode)) {
+          e.preventDefault();
+          this.$.list.focus((function(){
+            this.$.input.focus();
+          }).bind(this));
+          return;
+        }
+      }
+      if (e.keyCode === 13) {
+        this.input_value = this.$.input.value;
+        this.persist = [];
+        this.$.input.value = "";
+        this.go(this.listOptions[this.selectedOption].name);
+        setTimeout((function(){this.selectNext(0);}).bind(this), 350);
+      } else if (_.contains([9, 40], e.keyCode)) {  // next
+        this.selectNext(true);
+      } else if (_.contains([38], e.keyCode)) {  // prev
+        this.selectNext(false);
+      } else if (_.contains([27], e.keyCode)) {
+        this.persist = [];
+        this.$.input.value = "";
+        this.input_value = "";
+        this.$.list.setData([], (function(){
+          this.go("search");
+        }).bind(this));
+        setTimeout((function(){this.selectNext(0);}).bind(this), 350);
+      }
+    },
+    keyup: function(e) {
+      this.collapse(this.$.input.value.length > 2);
+    },
+    selectNext: function(next) {
+      if (next === true) {
+        this.selectedOption = ++this.selectedOption % this.listOptions.length;
+      } else if (_.isNumber(next)) {
+        this.selectedOption = next % this.listOptions.length;
+      } else {
+        this.selectedOption = (this.selectedOption<=0 ? this.listOptions.length-1 : this.selectedOption-1);
+      }
+      for (var i=0; i<this.listOptions.length; i++) {
+        if (i === this.selectedOption) {
+          this.listOptions[i].selected = true;
+        } else {
+          this.listOptions[i].selected = false;
+        }
+      }
+    },
+    collapse: function(open) {
+      this.$.collapse.opened = open || false;
+    }
+  });
+  </script>
+</polymer-element>
