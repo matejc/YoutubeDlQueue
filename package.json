@@ -14,7 +14,7 @@
     "loopback-datasource-juggler": "^2.19.0",
     "serve-favicon": "^2.0.1",
     "youtube-dl": "^1.10.2",
-    "node-ghettoblaster": "^0.0.1",
+    "node-mplayer": "^0.0.3",
     "valid-url": "^1.0.9",
     "underscore": "~1.8.3",
     "youtube-search": "^0.2.0"

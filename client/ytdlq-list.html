@@ -189,7 +189,7 @@
         if (this.data[this.selectedIndex].state === 'working') return;
         switch (this.getOption().type) {
           case "play":
-            this.$.play.url="/api/gblasters/play/"+this.data[this.selectedIndex].youtubedl_id;
+            this.$.play.url="/api/mplayers/play/"+this.data[this.selectedIndex].youtubedl_id;
             this.$.play.go();
             break;
           case "link":

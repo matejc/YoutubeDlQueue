@@ -68,6 +68,7 @@ module.exports = function(Youtubedl) {
     {arg: 'url',  type: 'string',  'http': {source: 'form'}}
   ];
   Youtubedl.add.http = {path: '/add', verb: 'post'};
+  Youtubedl.add.returns = {root: true};
 
   var generateSlug = function(value) {
     return value.toLowerCase();
@@ -129,7 +130,7 @@ module.exports = function(Youtubedl) {
           console.log("error: " + info.id);
         });
       });
-      cb();
+      cb(null, {statusCode: 200});
     });
   };
 

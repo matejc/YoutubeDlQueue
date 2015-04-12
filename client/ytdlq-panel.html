@@ -100,7 +100,7 @@
     <core-ajax
       id="stop"
       method="GET"
-      url="/api/gblasters/stop"
+      url="/api/mplayers/stop"
       handleAs="json"
       headers='{"Authorization": "{{accessToken}}"}'
       contentType="application/json"
@@ -129,7 +129,7 @@
       <core-ajax
         id="pause"
         method="GET"
-        url="/api/gblasters/pause"
+        url="/api/mplayers/pause"
         handleAs="json"
         headers='{"Authorization": "{{accessToken}}"}'
         contentType="application/json"
@@ -154,15 +154,15 @@
       this.$.pause.go();
     },
     onVolumeUp: function(e) {
-      this.$.volume.url="/api/gblasters/volume/inc";
+      this.$.volume.url="/api/mplayers/volume/inc";
       this.$.volume.go();
     },
     onVolumeDown: function(e) {
-      this.$.volume.url="/api/gblasters/volume/dec";
+      this.$.volume.url="/api/mplayers/volume/dec";
       this.$.volume.go();
     },
     onVolumeMute: function(e) {
-      this.$.volume.url="/api/gblasters/volume/mute";
+      this.$.volume.url="/api/mplayers/volume/mute";
       this.$.volume.go();
     },
     onSignOut: function(e) {

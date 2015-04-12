@@ -1,75 +1,83 @@
-module.exports = function(Gblaster) {
+module.exports = function(Mplayer) {
   var loopback = require('loopback');
   var youtubedl = require('youtube-dl');
   var fs = require('fs');
-  var GhettoBlaster = require('node-ghettoblaster');
+  var Player = require('node-mplayer');
   var player;
   var Youtubedl = loopback.getModel('youtubedl');
   var validUrl = require('valid-url');
   var volume = 50;
 
-  Gblaster.play = function(req, res, youtubedl_id, cb) {
+  Mplayer.play = function(req, res, youtubedl_id, cb) {
     Youtubedl.findOne({where: {youtubedl_id: youtubedl_id}}, function(err, o) {
       if (err) {
         err.statusCode = 400;
         return cb(err);
       }
-      if (player !== undefined) {
+      if (player) {
         player.stop();
+        player = null;
       }
-      player = new GhettoBlaster(o.filepath);
-      player.on('ended', function() {
-        console.log("ended");
+      player = new Player(o.filepath);
+      player.on('end', function() {
+        console.log("end");
+      });
+      player.on('error', function() {
+        console.log("error");
       });
       player.play({volume: volume});
     });
     cb(null, {statusCode: 200});
   };
-  Gblaster.play.shared = true;
-  Gblaster.play.accepts = [
+  Mplayer.play.shared = true;
+  Mplayer.play.accepts = [
     {arg: 'req',  type: 'object',  'http': {source: 'req'}},
     {arg: 'res',  type: 'object',  'http': {source: 'res'}},
     {arg: 'youtubedl_id', type: 'string', 'http': {source: 'path'}}
   ];
-  Gblaster.play.returns = {root: true};
-  Gblaster.play.http = {path: '/play/:youtubedl_id', verb: 'get'};
+  Mplayer.play.returns = {root: true};
+  Mplayer.play.http = {path: '/play/:youtubedl_id', verb: 'get'};
 
 
-  Gblaster.stream = function(req, res, body, cb) {
+  Mplayer.stream = function(req, res, body, cb) {
     var url = body.url;
     if (validUrl.is_uri(url) === undefined) {
       var err = new Error('Invalid URI');
       err.statusCode = 400;
       return cb(err);
     }
-    if (player !== undefined) {
+    if (player) {
       player.stop();
+      player = null;
     }
-    player = new GhettoBlaster(url);
-    player.on('ended', function() {
-      console.log("stream ended");
+    player = new Player(url);
+    player.on('end', function() {
+      console.log("end");
     });
-    player.play();
+    player.on('error', function() {
+      console.log("error");
+    });
+    player.play({volume: volume});
     cb(null, {statusCode: 200});
   };
-  Gblaster.stream.shared = true;
-  Gblaster.stream.accepts = [
+  Mplayer.stream.shared = true;
+  Mplayer.stream.accepts = [
     {arg: 'req',  type: 'object',  'http': {source: 'req'}},
     {arg: 'res',  type: 'object',  'http': {source: 'res'}},
     {arg: 'body',  type: 'string',  'http': {source: 'body'}}
   ];
-  Gblaster.stream.http = {path: '/stream', verb: 'post'};
-  Gblaster.stream.returns = {root: true};
+  Mplayer.stream.http = {path: '/stream', verb: 'post'};
+  Mplayer.stream.returns = {root: true};
 
 
-  Gblaster.volume = function(req, res, action, cb) {
+  Mplayer.volume = function(req, res, action, cb) {
     switch (action) {
       case "inc":
         volume = volume + 10;
         if (volume > 100) {
           volume = 100;
         }
-        if (player !== undefined) {
+        if (player) {
           player.setVolume(volume);
         }
         break;
@@ -78,46 +86,47 @@ module.exports = function(Gblaster) {
         if (volume < 0) {
           volume = 0;
         }
-        if (player !== undefined) {
+        if (player) {
           player.setVolume(volume);
         }
         break;
       case "mute":
-        if (player !== undefined) {
+        if (player) {
           player.mute();
         }
         break;
     }
     cb(null, {statusCode: 200, action: action, volume: volume});
   };
-  Gblaster.volume.shared = true;
-  Gblaster.volume.accepts = [
+  Mplayer.volume.shared = true;
+  Mplayer.volume.accepts = [
     {arg: 'req',  type: 'object',  'http': {source: 'req'}},
     {arg: 'res',  type: 'object',  'http': {source: 'res'}},
     {arg: 'action', type: 'string', 'http': {source: 'path'}}
   ];
-  Gblaster.volume.http = {path: '/volume/:action', verb: 'get'};
-  Gblaster.volume.returns = {root: true};
+  Mplayer.volume.http = {path: '/volume/:action', verb: 'get'};
+  Mplayer.volume.returns = {root: true};
 
 
-  Gblaster.pause = function(cb) {
-    if (player !== undefined) {
-      player.toggle();
+  Mplayer.pause = function(cb) {
+    if (player) {
+      player.pause();
     }
     cb(null, {statusCode: 200});
   };
-  Gblaster.pause.shared = true;
-  Gblaster.pause.http = {path: '/pause', verb: 'get'};
-  Gblaster.pause.returns = {root: true};
+  Mplayer.pause.shared = true;
+  Mplayer.pause.http = {path: '/pause', verb: 'get'};
+  Mplayer.pause.returns = {root: true};
 
 
-  Gblaster.stop = function(cb) {
-    if (player !== undefined) {
+  Mplayer.stop = function(cb) {
+    if (player) {
       player.stop();
+      player = null;
     }
     cb(null, {statusCode: 200});
   };
-  Gblaster.stop.shared = true;
-  Gblaster.stop.http = {path: '/stop', verb: 'get'};
-  Gblaster.stop.returns = {root: true};
+  Mplayer.stop.shared = true;
+  Mplayer.stop.http = {path: '/stop', verb: 'get'};
+  Mplayer.stop.returns = {root: true};
 };

@@ -1,6 +1,6 @@
 {
-  "name": "gblaster",
-  "base": "Model",
+  "name": "mplayer",
+  "base": "PersistedModel",
   "idInjection": true,
   "properties": {},
   "validations": [],
