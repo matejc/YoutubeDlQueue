@@ -137,6 +137,18 @@ module.exports = function(Youtubedl) {
 
     switch (query.target) {
       case "youtube":
+        var search = require('youtube-search');
+        search(query.text, { maxResults: 5, startIndex: 1 }, function(err, results) {
+          if(err) return cb(err);
+          var result = [];
+          for (var i in results) {
+            result.push({
+              title: results[i].title,
+              url: results[i].url
+            });
+          }
+          cb(null, result);
+        });
         break;
       default:
         // enforce

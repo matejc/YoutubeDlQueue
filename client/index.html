@@ -97,7 +97,7 @@
           }
         },
         redirectFocus: function(e) {
-          if (!e || e.target.id !== "panel") {
+          if ((e && e.target.id === "container") || !e) {
             this.$.input.focus();
           }
         }

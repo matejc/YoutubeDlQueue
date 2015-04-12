@@ -39,6 +39,12 @@
     div.heading {
       text-align: center;
     }
+    #collapse .option:last-child {
+      margin-bottom: 3px;
+    }
+    #collapse {
+      border-bottom: solid 1px #4059a9;
+    }
     </style>
     <div id="container">
       <div class="heading"><span class="heading">YoutubeDlQueue</span></div>
@@ -86,12 +92,14 @@
       this.selectedOption = 0;
       this.listOptions = [
         {name: "search", title: "Search", selected: true},
-        {name: "add", title: "Add URL"},
-        {name: "stream", title: "Play from URL"}
+        {name: "youtube", title: "Youtube Search"},
+        {name: "add", title: "Add from URL"},
+        {name: "stream", title: "Direct play from URL"}
       ];
       this.input_value = "";
       this.persist = [];
       setInterval((function(){
+        if (this.target === 'youtube') return;
         this.go.bind(this)('search');
       }).bind(this), 2000);
     },
@@ -103,14 +111,20 @@
       this.persist = [];
       this.$.input.value = "";
       this.input_value = "";
-      this.$.list.setData([], (function(){
+      this.$.list.setData([], 'local', (function(){
         this.go("search");
       }).bind(this));
       setTimeout((function(){this.selectNext(0);}).bind(this), 350);
     },
     searchResponse: function(e) {
-      this.$.list.setData(e.detail.response, function(){});
-      this.persist = e.detail.response;
+      var target;
+      if (_.isEmpty(e.detail.response) || e.detail.response[0].youtubedl_id) {
+        target = 'local'
+        this.persist = e.detail.response;
+      } else {
+        target = 'youtube'
+      }
+      this.$.list.setData(e.detail.response, target, function(){});
     },
     streamResponse: function(e) {
       this.fire('core-signal', {name: "message", data: "Loading stream ..."});
@@ -135,7 +149,16 @@
           this.input_value = '';
           this.$.add.go();
           break;
+        case "youtube":
+          this.target = 'youtube';
+          this.$.search.body = JSON.stringify({
+            text: this.input_value,
+            target: 'youtube'
+          });
+          this.$.search.go();
+          break;
         case "search":
+          this.target = 'local';
           this.$.search.body = JSON.stringify({
             text: this.input_value,
             target: 'local',
@@ -173,14 +196,19 @@
         this.go(this.listOptions[this.selectedOption].name);
         setTimeout((function(){this.selectNext(0);}).bind(this), 350);
       } else if (_.contains([9, 40], e.keyCode)) {  // next
+        e.preventDefault();
         this.selectNext(true);
       } else if (_.contains([38], e.keyCode)) {  // prev
+        e.preventDefault();
         this.selectNext(false);
       } else if (_.contains([27], e.keyCode)) {
         this.persist = [];
         this.$.input.value = "";
         this.input_value = "";
-        this.$.list.setData([], (function(){
+        if (this.$.collapse.opened) {
+          return;
+        }
+        this.$.list.setData([], 'local', (function(){
           this.go("search");
         }).bind(this));
         setTimeout((function(){this.selectNext(0);}).bind(this), 350);

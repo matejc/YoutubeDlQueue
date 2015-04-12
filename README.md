@@ -1,6 +1,6 @@
 # YoutubeDlQueue
 
-Remote control for youtube-dl
+REST API for youtube-dl and UI
 
 
 ## Dependencies

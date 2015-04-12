@@ -5,10 +5,10 @@
   <template>
     <style>
       #container {
-        width: 5em;
-        height: 21.5em;
+        width: 4em;
+        height: 17em;
         position: absolute;
-        top: 3em;
+        top: 2em;
         left: 0;
         -webkit-transition: 200ms ease;
         -moz-transition: 200ms ease;
@@ -85,11 +85,12 @@
       <ytdlq-login id="login" class="{{ {login: showLoginForm} | tokenList }}"></ytdlq-login>
 
       <div id="options" class="{{ {login: showLoginForm} | tokenList }}">
-        <font-awesome icon="volume-up" size="3x" on-click="{{onVolumeUp}}"></font-awesome>
-        <font-awesome icon="volume-down" size="3x" on-click="{{onVolumeDown}}"></font-awesome>
-        <font-awesome icon="volume-off" size="3x" on-click="{{onVolumeMute}}"></font-awesome>
-        <font-awesome icon="stop" size="3x" on-click="{{onStop}}"></font-awesome>
-        <font-awesome icon="sign-out" size="3x" on-click="{{onSignOut}}"></font-awesome>
+        <font-awesome icon="pause" size="2x" on-click="{{onPause}}"></font-awesome>
+        <font-awesome icon="stop" size="2x" on-click="{{onStop}}"></font-awesome>
+        <font-awesome icon="volume-up" size="2x" on-click="{{onVolumeUp}}"></font-awesome>
+        <font-awesome icon="volume-down" size="2x" on-click="{{onVolumeDown}}"></font-awesome>
+        <font-awesome icon="volume-off" size="2x" on-click="{{onVolumeMute}}"></font-awesome>
+        <font-awesome icon="sign-out" size="2x" on-click="{{onSignOut}}"></font-awesome>
       </div>
 
     </div>
@@ -99,6 +100,7 @@
     <core-ajax
       id="stop"
       method="GET"
+      url="/api/gblasters/stop"
       handleAs="json"
       headers='{"Authorization": "{{accessToken}}"}'
       contentType="application/json"
@@ -123,6 +125,16 @@
       contentType="application/json"
       on-core-error="{{onError}}"
       on-core-response="{{volumeResponse}}"></core-ajax>
+
+      <core-ajax
+        id="pause"
+        method="GET"
+        url="/api/gblasters/pause"
+        handleAs="json"
+        headers='{"Authorization": "{{accessToken}}"}'
+        contentType="application/json"
+        on-core-error="{{onAjaxError}}"
+        on-core-response="{{pauseResponse}}"></core-ajax>
   </template>
   <script>
   Polymer({
@@ -136,8 +148,10 @@
       this.showLoginForm = newValue == 401;
     },
     onStop: function(e) {
-      this.$.stop.url="/api/gblasters/stop";
       this.$.stop.go();
+    },
+    onPause: function(e) {
+      this.$.pause.go();
     },
     onVolumeUp: function(e) {
       this.$.volume.url="/api/gblasters/volume/inc";

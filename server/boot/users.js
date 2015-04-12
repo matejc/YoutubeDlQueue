@@ -38,7 +38,7 @@ module.exports = function createUser(server) {
   };
 
   for (var i in users) {
-    createUser(users[i].username, users[i].email, users[i].password, users[i].role, false);
+    createUser(users[i].username, users[i].email, users[i].password, users[i].role, users[i].username==='admin');
   }
 
 };

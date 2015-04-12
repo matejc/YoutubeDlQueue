@@ -16,7 +16,8 @@
     "youtube-dl": "^1.10.2",
     "node-ghettoblaster": "^0.0.1",
     "valid-url": "^1.0.9",
-    "underscore": "~1.8.3"
+    "underscore": "~1.8.3",
+    "youtube-search": "^0.2.0"
   },
   "optionalDependencies": {
     "loopback-explorer": "^1.1.0"
@@ -28,5 +29,5 @@
     "type": "",
     "url": ""
   },
-  "description": "youtubequeue"
+  "description": "youtubedlqueue"
 }

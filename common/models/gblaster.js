@@ -100,6 +100,17 @@ module.exports = function(Gblaster) {
   Gblaster.volume.returns = {root: true};
 
 
+  Gblaster.pause = function(cb) {
+    if (player !== undefined) {
+      player.toggle();
+    }
+    cb(null, {statusCode: 200});
+  };
+  Gblaster.pause.shared = true;
+  Gblaster.pause.http = {path: '/pause', verb: 'get'};
+  Gblaster.pause.returns = {root: true};
+
+
   Gblaster.stop = function(cb) {
     if (player !== undefined) {
       player.stop();
