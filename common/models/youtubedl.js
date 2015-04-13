@@ -78,7 +78,7 @@ module.exports = function(Youtubedl) {
     youtubedl.getInfo(url, [], function(err, info) {
       if (err) return cb(err);
       console.log("start: " + info.id);
-      info._filepath = __dirname + '/../../audio/' + info.id + '.m4a';
+      info._filepath = __dirname + '/../../storage/audio/' + info.id + '.m4a';
       info._filename = info._filename + '.m4a';
       var writeStream = fs.createWriteStream(info._filepath);
       audio.pipe(writeStream);

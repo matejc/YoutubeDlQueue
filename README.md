@@ -24,3 +24,16 @@ mplayer, nodejs, openssl, youtube-dl
     nano ./server/users.json
 
     slc run
+
+
+Browser: https://localhost:4000/index.html
+
+
+## Docker
+
+    docker build -t matejc/youtubedlqueue .
+
+    docker run --rm -p 4000:4000 -v /dev/snd:/dev/snd --lxc-conf='lxc.cgroup.devices.allow = c 116:* rwm' --device=/dev/dsp:/dev/dsp -it matejc/youtubedlqueue:latest
+
+
+Browser: https://localhost:4000/index.html
