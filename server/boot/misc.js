@@ -1,10 +1,11 @@
-module.exports = function createUser(server) {
+module.exports = function misc(server) {
 
   var User = server.models.User;
   var Role = server.models.Role;
   var RoleMapping = server.models.RoleMapping;
   var helpers = require('../helpers');
   var users = require('../users.json');
+  var Youtubedl = server.models.Youtubedl;
 
   helpers.setMethodsVisibility(User, ['login', 'logout']);
   // User.disableRemoteMethod('create', true);

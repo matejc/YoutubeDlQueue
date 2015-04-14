@@ -2,32 +2,106 @@ module.exports = function(Mplayer) {
   var loopback = require('loopback');
   var youtubedl = require('youtube-dl');
   var fs = require('fs');
-  var Player = require('node-mplayer');
+  // var Player = require('node-mplayer');
+  var Player = require('node-ghettoblaster');
   var player;
   var Youtubedl = loopback.getModel('youtubedl');
   var validUrl = require('valid-url');
   var volume = 50;
 
+  function errorDo(err, message, statusCode, cb) {
+    if (err) {
+      err.statusCode = statusCode;
+      console.error(err);
+      return cb?cb(err):undefined;
+    } else {
+      var err = new Error(message);;
+      err.statusCode = statusCode;
+      console.error(err);
+      return cb?cb(err):undefined;
+    }
+  }
+
+  function playerDo(action, obj, cb) {
+    try {
+
+      switch (action) {
+        case "stop":
+          if (player) {
+            player.stop();
+            player = null;
+          }
+          break;
+        case "play":
+          player = new Player(obj.filepath);
+          player.on('end', function() {
+            console.log("end playback: " + obj.youtubedl_id);
+          });
+          player.on('error', function() {
+            errorDo(undefined, "Playback Error: "+obj.youtubedl_id, 500, cb);
+          });
+          player.play({volume: volume});
+          break;
+        case "stream":
+          player = new Player(obj);
+          player.on('end', function() {
+            console.log("end playback: " + obj.youtubedl_id);
+          });
+          player.on('error', function() {
+            errorDo(undefined, "Stream Playback Error: "+obj.youtubedl_id, 500, cb);
+          });
+          player.play({volume: volume});
+          break;
+        case "volume":
+          switch (obj) {
+            case "inc":
+              volume = volume + 10;
+              if (volume > 100) {
+                volume = 100;
+              }
+              if (player) {
+                player.setVolume(volume);
+              }
+              break;
+            case "dec":
+              volume = volume - 10;
+              if (volume < 0) {
+                volume = 0;
+              }
+              if (player) {
+                player.setVolume(volume);
+              }
+              break;
+            case "mute":
+              if (player) {
+                player.mute();
+              }
+              break;
+          }
+          break;
+        case "pause":
+          if (player) {
+            player.toggle();
+          }
+          break;
+        default:
+          break;
+      }
+    } catch(err) {
+      return errorDo(err, cb);
+    }
+  }
+
+
   Mplayer.play = function(req, res, youtubedl_id, cb) {
     Youtubedl.findOne({where: {youtubedl_id: youtubedl_id}}, function(err, o) {
       if (err) {
-        err.statusCode = 400;
-        return cb(err);
+        return errorDo(err);
       }
-      if (player) {
-        player.stop();
-        player = null;
-      }
-      player = new Player(o.filepath);
-      player.on('end', function() {
-        console.log("end");
-      });
-      player.on('error', function() {
-        console.log("error");
-      });
-      player.play({volume: volume});
+      playerDo('stop');
+      playerDo('play', o);
     });
-    cb(null, {statusCode: 200});
+    return cb(null, {statusCode: 200});
   };
   Mplayer.play.shared = true;
   Mplayer.play.accepts = [
@@ -42,23 +116,11 @@ module.exports = function(Mplayer) {
   Mplayer.stream = function(req, res, body, cb) {
     var url = body.url;
     if (validUrl.is_uri(url) === undefined) {
-      var err = new Error('Invalid URI');
-      err.statusCode = 400;
-      return cb(err);
+      return errorDo(undefined, 'Invalid URI', 400, cb);
     }
-    if (player) {
-      player.stop();
-      player = null;
-    }
-    player = new Player(url);
-    player.on('end', function() {
-      console.log("end");
-    });
-    player.on('error', function() {
-      console.log("error");
-    });
-    player.play({volume: volume});
-    cb(null, {statusCode: 200});
+    playerDo('stop');
+    playerDo('stream', url);
+    return cb(undefined, {statusCode: 200});
   };
   Mplayer.stream.shared = true;
   Mplayer.stream.accepts = [
@@ -71,32 +133,8 @@ module.exports = function(Mplayer) {
 
 
   Mplayer.volume = function(req, res, action, cb) {
-    switch (action) {
-      case "inc":
-        volume = volume + 10;
-        if (volume > 100) {
-          volume = 100;
-        }
-        if (player) {
-          player.setVolume(volume);
-        }
-        break;
-      case "dec":
-        volume = volume - 10;
-        if (volume < 0) {
-          volume = 0;
-        }
-        if (player) {
-          player.setVolume(volume);
-        }
-        break;
-      case "mute":
-        if (player) {
-          player.mute();
-        }
-        break;
-    }
-    cb(null, {statusCode: 200, action: action, volume: volume});
+    playerDo('volume', action);
+    return cb(null, {statusCode: 200, action: action, volume: volume});
   };
   Mplayer.volume.shared = true;
   Mplayer.volume.accepts = [
@@ -109,10 +147,8 @@ module.exports = function(Mplayer) {
 
 
   Mplayer.pause = function(cb) {
-    if (player) {
-      player.pause();
-    }
-    cb(null, {statusCode: 200});
+    playerDo('pause');
+    return cb(null, {statusCode: 200});
   };
   Mplayer.pause.shared = true;
   Mplayer.pause.http = {path: '/pause', verb: 'get'};
@@ -120,11 +156,8 @@ module.exports = function(Mplayer) {
 
 
   Mplayer.stop = function(cb) {
-    if (player) {
-      player.stop();
-      player = null;
-    }
-    cb(null, {statusCode: 200});
+    playerDo('stop');
+    return cb(null, {statusCode: 200});
   };
   Mplayer.stop.shared = true;
   Mplayer.stop.http = {path: '/stop', verb: 'get'};

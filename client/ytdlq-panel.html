@@ -182,6 +182,9 @@
     },
     stopResponse: function(e) {
       this.fire('core-signal', {name: "message", data: e.detail.response});
+    },
+    pauseResponse: function(e) {
+      this.fire('core-signal', {name: "message", data: e.detail.response});
     }
   });
   </script>

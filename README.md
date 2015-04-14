@@ -33,7 +33,9 @@ Browser: https://localhost:4000/index.html
 
     docker build -t matejc/youtubedlqueue .
 
-    docker run --rm -p 4000:4000 -v /dev/snd:/dev/snd --lxc-conf='lxc.cgroup.devices.allow = c 116:* rwm' --device=/dev/dsp:/dev/dsp -it matejc/youtubedlqueue:latest
+    mkdir -p /home/"$USER"/.ytdlq/audio
+
+    docker run --rm -p 4000:4000 -v /home/"$USER"/.ytdlq:/youtubedlqueue/storage -v /dev/snd:/dev/snd --lxc-conf='lxc.cgroup.devices.allow = c 116:* rwm' --device=/dev/dsp:/dev/dsp -it matejc/youtubedlqueue:latest
 
 
 Browser: https://localhost:4000/index.html

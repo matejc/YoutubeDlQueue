@@ -91,10 +91,10 @@
     ready: function() {
       this.selectedOption = 0;
       this.listOptions = [
-        {name: "search", title: "Search", selected: true},
+        {name: "search", title: "History Search", selected: true},
         {name: "youtube", title: "Youtube Search"},
-        {name: "add", title: "Add from URL"},
-        {name: "stream", title: "Direct play from URL"}
+        {name: "add", title: "Add from URL (pre download to history)"},
+        {name: "stream", title: "Play from URL (direct play)"}
       ];
       this.input_value = "";
       this.persist = [];
@@ -127,6 +127,7 @@
       this.$.list.setData(e.detail.response, target, function(){});
     },
     streamResponse: function(e) {
+      this.addResponse(e);
       this.fire('core-signal', {name: "message", data: "Loading stream ..."});
     },
     onAjaxError: function(e) {
@@ -197,11 +198,11 @@
         setTimeout((function(){this.selectNext(0);}).bind(this), 350);
       } else if (_.contains([9, 40], e.keyCode)) {  // next
         e.preventDefault();
-        this.selectNext(true);
-      } else if (_.contains([38], e.keyCode)) {  // prev
+        if (this.$.collapse.opened) this.selectNext(true);
+      } else if (38 == e.keyCode) {  // prev
         e.preventDefault();
-        this.selectNext(false);
-      } else if (_.contains([27], e.keyCode)) {
+        if (this.$.collapse.opened) this.selectNext(false);
+      } else if (27 == e.keyCode) {
         this.persist = [];
         this.$.input.value = "";
         this.input_value = "";

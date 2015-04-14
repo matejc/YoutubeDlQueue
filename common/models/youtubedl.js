@@ -190,6 +190,7 @@ module.exports = function(Youtubedl) {
 
 
   Youtubedl.ping = function(cb) {
+    Youtubedl.destroyAll({state: 'working'}, function(err, info){});
     return cb(null, {statusCode: 200});
   };
   Youtubedl.ping.shared = true;

@@ -69,7 +69,7 @@
     <div id="container">
       <core-list id="list" data="{{data}}" selectionEnabled on-keydown="{{keydown}}" on-core-activate="{{activate}}" flex>
         <template>
-          <div class="item {{ {selected: selected} | tokenList }} {{target}}" data-index="{{index}}">
+          <div class="item {{ {selected: selected} | tokenList }} {{target}}" data-index="{{index}}" on-mousedown="{{onItemClick}}">
             <template if="{{target==='youtube'}}">
               <span>{{model.title}}</span>
               <div class="options" data-youtubedl_id="{{model.youtubedl_id}}" data-index="{{index}}">
@@ -178,10 +178,15 @@
         return this.youtubeOptions.length;
       }
     },
+    onItemClick: function(e) {
+      if ((e.target.className.indexOf('selected') !== -1) || (e.target.parentNode.className.indexOf('selected') !== -1)) {
+        // e.preventDefault();
+        e.stopPropagation();
+      }
+    },
     keydown: function(e) {
       if (e.button === 0) {
         this.optionIndex = parseInt(e.target.getAttribute("data-index"));
-        // this.$.list.setItemSelected(this.selectedIndex, false);
         this.selectedIndex = parseInt(e.target.parentNode.getAttribute("data-index"));
       }
       if (e.keyCode === 13 || e.button === 0) {

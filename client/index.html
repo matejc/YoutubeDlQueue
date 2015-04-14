@@ -41,7 +41,7 @@
         }
         </style>
 
-        <div id="container" on-click="{{redirectFocus}}">
+        <div id="container" on-mousedown="{{redirectFocus}}">
           <ytdlq-panel id="panel" accessToken="{{accessToken}}"></ytdlq-panel>
           <ytdlq-input id="input" accessToken="{{accessToken}}"></ytdlq-input>
         </div>
@@ -82,22 +82,33 @@
         },
         onMessage: function(e) {
           var message = e.detail;
+          console.log(message);
           if (message.statusCode) {
-            message = message.statusCode;
-            if (message == 401) {
-              message = null;
+            // message = message.statusCode;
+            if (message.statusCode == 401) {
               this.$.ping.go();
-            } else if (message == 200) {
-              message = "OK";
+              return;
+            } else if (message.statusCode == 200) {
+              // message = message.msg?message.msg:"OK";
             }
           }
-          if (message) {
+          if (message.msg) {
+            this.$.message.text = message.msg;
+            this.$.message.show();
+          } else if (message.statusCode) {
+            this.$.message.text = message.statusCode;
+            this.$.message.show();
+          } else {
             this.$.message.text = message;
             this.$.message.show();
           }
         },
         redirectFocus: function(e) {
           if ((e && e.target.id === "container") || !e) {
+            if (e) {
+              e.preventDefault();
+              e.stopPropagation();
+            }
             this.$.input.focus();
           }
         }
