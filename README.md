@@ -23,7 +23,14 @@ mplayer, nodejs, openssl, youtube-dl
     # EDIT USERS BEFORE FIRST RUN!!
     nano ./server/users.json
 
-    slc run
+
+## Usage
+
+    # start
+    slc run --cluster=1 -d
+
+    # stop
+    slc runctl stop
 
 
 Browser: https://localhost:4000/index.html

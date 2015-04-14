@@ -36,7 +36,7 @@
       font-size: 300%;
       display: inline-block;
     }
-    div.heading {
+    #heading {
       text-align: center;
     }
     #collapse .option:last-child {
@@ -47,8 +47,8 @@
     }
     </style>
     <div id="container">
-      <div class="heading"><span class="heading">YoutubeDlQueue</span></div>
-      <paper-input id="input" label="Search or enter url (press ESC to refresh)!" on-keydown="{{keydown}}" on-keyup="{{keyup}}" floatingLabel>
+      <div id="heading"><span class="heading">YoutubeDlQueue</span></div>
+      <paper-input id="input" label="Search or enter url (press ESC to refresh)!" on-keydown="{{keydown}}" on-keyup="{{keyup}}">
       </paper-input>
       <core-collapse id="collapse">
         <template repeat="{{option in listOptions}}">
@@ -206,9 +206,9 @@
         this.persist = [];
         this.$.input.value = "";
         this.input_value = "";
-        if (this.$.collapse.opened) {
-          return;
-        }
+        // if (this.$.collapse.opened) {
+          // return;
+        // }
         this.$.list.setData([], 'local', (function(){
           this.go("search");
         }).bind(this));

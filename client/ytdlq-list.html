@@ -255,7 +255,7 @@
       this.target = target;
       var elem = this.$.list;
       var show = !_.isEmpty(data);
-      if (_.isEqual(data, this.data)) {
+      if (_.isEqual(data, this.data) || this.animating) {
         return cb();
       }
       var anim, onFinish;
