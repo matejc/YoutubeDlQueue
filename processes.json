@@ -1,0 +1,15 @@
+{
+  "apps" : [{
+    "name"      : "YoutubeDlQueue",
+    "script"    : "/home/matej/.npm-packages/bin/slc",
+    "args"      : ["run"],
+    "watch"       : true,
+    "autorestart" : true,
+    "err_file"    : "YoutubeDlQueue.log",
+    "out_file"    : "YoutubeDlQueue.log",
+    "cwd"         : "./",
+    "env" : {
+      "PWD": "./"
+    }
+  }]
+}
