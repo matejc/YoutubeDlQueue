@@ -1,6 +1,7 @@
 {
   "name": "mplayer",
-  "base": "PersistedModel",
+  "plural": "mplayer",
+  "base": "Model",
   "idInjection": true,
   "properties": {},
   "validations": [],

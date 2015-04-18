@@ -1,30 +1,14 @@
 module.exports = function(Mplayer) {
   var loopback = require('loopback');
-  var youtubedl = require('youtube-dl');
   var fs = require('fs');
-  // var Player = require('node-mplayer');
   var Player = require('node-ghettoblaster');
   var player;
-  var Youtubedl = loopback.getModel('youtubedl');
   var validUrl = require('valid-url');
   var volume = 50;
-
-  function errorDo(err, message, statusCode, cb) {
-    if (err) {
-      err.statusCode = statusCode;
-      console.error(err);
-      return cb?cb(err):undefined;
-    } else {
-      var err = new Error(message);;
-      err.statusCode = statusCode;
-      console.error(err);
-      return cb?cb(err):undefined;
-    }
-  }
+  var errorDo = require('../../server/helpers').errorDo;
 
   function playerDo(action, obj, cb) {
     try {
-
       switch (action) {
         case "stop":
           if (player) {
@@ -33,22 +17,22 @@ module.exports = function(Mplayer) {
           }
           break;
         case "play":
-          player = new Player(obj.filepath);
+          player = new Player(obj.mediatype==='stream'?obj.url:obj.filepath);
           player.on('end', function() {
-            console.log("end playback: " + obj.youtubedl_id);
+            console.log("end playback: " + obj.mediaid);
           });
           player.on('error', function() {
-            errorDo(undefined, "Playback Error: "+obj.youtubedl_id, 500, cb);
+            errorDo(undefined, 500, "Playback Error: "+obj.mediaid, cb);
           });
           player.play({volume: volume});
           break;
         case "stream":
           player = new Player(obj);
           player.on('end', function() {
-            console.log("end playback: " + obj.youtubedl_id);
+            console.log("end playback: " + obj.mediaid);
           });
           player.on('error', function() {
-            errorDo(undefined, "Stream Playback Error: "+obj.youtubedl_id, 500, cb);
+            errorDo(undefined, 500, "Stream Playback Error: "+obj.mediaid, cb);
           });
           player.play({volume: volume});
           break;
@@ -88,16 +72,16 @@ module.exports = function(Mplayer) {
           break;
       }
     } catch(err) {
-      return errorDo(err, cb);
+      return errorDo(err, 500, null, cb);
     }
   }
 
 
-  Mplayer.play = function(req, res, youtubedl_id, cb) {
-    Youtubedl.findOne({where: {youtubedl_id: youtubedl_id}}, function(err, o) {
-      if (err) {
-        return errorDo(err);
-      }
+  Mplayer.play = function(req, res, mediaid, cb) {
+    loopback.getModel('media').findOne({
+      where: {mediaid: mediaid}
+    }, function(err, o) {
+      if (err) return errorDo(err);
       playerDo('stop');
       playerDo('play', o);
     });
@@ -107,16 +91,16 @@ module.exports = function(Mplayer) {
   Mplayer.play.accepts = [
     {arg: 'req',  type: 'object',  'http': {source: 'req'}},
     {arg: 'res',  type: 'object',  'http': {source: 'res'}},
-    {arg: 'youtubedl_id', type: 'string', 'http': {source: 'path'}}
+    {arg: 'mediaid', type: 'string', 'http': {source: 'path'}}
   ];
   Mplayer.play.returns = {root: true};
-  Mplayer.play.http = {path: '/play/:youtubedl_id', verb: 'get'};
+  Mplayer.play.http = {path: '/play/:mediaid', verb: 'get'};
 
 
   Mplayer.stream = function(req, res, body, cb) {
     var url = body.url;
     if (validUrl.is_uri(url) === undefined) {
-      return errorDo(undefined, 'Invalid URI', 400, cb);
+      return errorDo(undefined, 400, 'Invalid URI', cb);
     }
     playerDo('stop');
     playerDo('stream', url);

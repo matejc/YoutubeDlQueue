@@ -2,10 +2,74 @@ module.exports = function(Youtubedl) {
   var loopback = require('loopback');
   var youtubedl = require('youtube-dl');
   var fs = require('fs');
-  var helpers = require('../../server/helpers');
+  var setMethodsVisibility = require('../../server/helpers').setMethodsVisibility;
+  var errorDo = require('../../server/helpers').errorDo;
   var validUrl = require('valid-url');
   var _ = require('underscore');
+  var generateSlug = require('../../server/helpers').generateSlug;
 
+  Youtubedl.download = function(req, res, url, cb) {
+    download(url, cb);
+  };
+  Youtubedl.download.shared = true;
+  Youtubedl.download.accepts = [
+    {arg: 'req',  type: 'object',  'http': {source: 'req'}},
+    {arg: 'res',  type: 'object',  'http': {source: 'res'}},
+    {arg: 'url',  type: 'string',  'http': {source: 'form'}}
+  ];
+  Youtubedl.download.http = {path: '/add', verb: 'post'};
+  Youtubedl.download.returns = {root: true};
+
+  var download = function(url, cb) {
+    var audio = youtubedl(url, ['--extract-audio', '--audio-format', 'm4a']);
+    youtubedl.getInfo(url, [], function(err, info) {
+      if (err) return cb(err);
+      info._filepath = __dirname + '/../../storage/audio/' + info.id + '.m4a';
+      info._filename = info._filename + '.m4a';
+      var writeStream = fs.createWriteStream(info._filepath);
+      audio.pipe(writeStream);
+      cb(null, {
+        url: url,
+        title: info.title,
+        mediatype: info.mediatype,
+        mediaid: info.id,
+        filename: info._filename,
+        filepath: info._filepath,
+        time: new Date(),
+        state: 'working',
+        slug: generateSlug(info.title)
+      });
+      var forceStop = setTimeout(function() {
+        audio.unpipe(writeStream);
+        writeStream.end();
+        cb(null, {
+          mediaid: info.id,
+          state: 'timeout'
+        });
+      }, 600000);
+      audio.on('end', function() {
+        audio.unpipe(writeStream);
+        writeStream.end();
+        cb(null, {
+          mediaid: info.id,
+          state: 'done'
+        });
+        clearTimeout(forceStop);
+      });
+      audio.on('error', function() {
+        audio.unpipe(writeStream);
+        writeStream.end();
+        cb(null, {
+          mediaid: info.id,
+          state: 'error'
+        });
+        clearTimeout(forceStop);
+      });
+    });
+  };
+
+
+/*
   Youtubedl.stream = function(req, res, youtubedl_id, cb) {
 
     Youtubedl.findOne({where: {youtubedl_id: youtubedl_id}}, function(err, o) {
@@ -28,7 +92,6 @@ module.exports = function(Youtubedl) {
     {arg: 'youtubedl_id', type: 'string', 'http': {source: 'path'}}
   ];
   Youtubedl.stream.http = {path: '/stream/:youtubedl_id', verb: 'get'};
-
 
   Youtubedl.download = function(req, res, youtubedl_id, cb) {
     Youtubedl.findOne({where: {youtubedl_id: youtubedl_id}}, function(err, o) {
@@ -198,7 +261,7 @@ module.exports = function(Youtubedl) {
   Youtubedl.ping.http = {path: '/ping', verb: 'get'};
 
 
-  helpers.setMethodsVisibility(Youtubedl);
-
+  setMethodsVisibility(Youtubedl);
+*/
   // Youtubedl.disableRemoteMethod('create', true);
 };

@@ -28,11 +28,19 @@
     "public": false
   },
   "youtubedl": {
-    "dataSource": "db",
-    "public": true
+    "dataSource": null,
+    "public": false
   },
   "mplayer": {
     "dataSource": null,
+    "public": true
+  },
+  "media": {
+    "dataSource": "db",
+    "public": true
+  },
+  "misc": {
+    "dataSource": "db",
     "public": true
   }
 }

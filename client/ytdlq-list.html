@@ -10,6 +10,9 @@
     }
     .item {
       height: 54px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .options {
       position: absolute;
@@ -57,13 +60,21 @@
     font-awesome:active {
       color: red;
     }
-    .youtubedl_id {
-      color: grey;
-      font-size: 60%;
-    }
     paper-icon-button {
       width: 20px;
       height: 20px;
+    }
+    .playlistindex.selected {
+      color: white;
+    }
+    .playlistindex {
+      color: #4059a9;
+      font-weight: 900;
+      font-size: 1em;
+      display: inline-block;
+      position: absolute;
+      left: 1em;
+      bottom: 0.1em;
     }
     </style>
     <div id="container">
@@ -72,14 +83,15 @@
           <div class="item {{ {selected: selected} | tokenList }} {{target}}" data-index="{{index}}" on-mousedown="{{onItemClick}}">
             <template if="{{target==='youtube'}}">
               <span>{{model.title}}</span>
-              <div class="options" data-youtubedl_id="{{model.youtubedl_id}}" data-index="{{index}}">
+              <div class="options" data-mediaid="{{model.mediaid}}" data-index="{{index}}">
                 <font-awesome icon="{{youtubeOptions[0].type}}" size="lg" class="{{ {selected: optionIndex===0 && selected} | tokenList }}" data-index="0" on-click="{{keydown}}"></font-awesome>
                 <font-awesome icon="{{youtubeOptions[1].type}}" size="lg" class="{{ {selected: optionIndex===1 && selected} | tokenList }}" data-index="1" on-click="{{keydown}}"></font-awesome>
               </div>
             </template>
             <template if="{{target==='local'}}">
-              <template if="{{model.state == 'done'}}">
+              <template if="{{model.state == 'done' && model.playlistindex}}">
                 <font-awesome icon="check" size="lg"></font-awesome>
+                <!-- <div class="playlistindex {{ {selected: selected} | tokenList }}"><span>{{model.playlistindex}}</span></div> -->
               </template>
               <template if="{{model.state == 'timeout'}}">
                 <font-awesome icon="clock-o" size="lg"></font-awesome>
@@ -92,7 +104,7 @@
               </template>
               <span>{{model.title}}</span>
               <template if="{{model.state !== 'working'}}">
-                <div class="options" data-youtubedl_id="{{model.youtubedl_id}}" data-index="{{index}}">
+                <div class="options" data-mediaid="{{model.mediaid}}" data-index="{{index}}">
                   <font-awesome icon="{{localOptions[0].type}}" size="lg" class="{{ {selected: optionIndex===0 && selected} | tokenList }}" data-index="0" on-click="{{keydown}}"></font-awesome>
                   <font-awesome icon="{{localOptions[1].type}}" size="lg" class="{{ {selected: optionIndex===1 && selected} | tokenList }}" data-index="1" on-click="{{keydown}}"></font-awesome>
                   <font-awesome icon="{{localOptions[2].type}}" size="lg" class="{{ {selected: optionIndex===2 && selected} | tokenList }}" data-index="2" on-click="{{keydown}}"></font-awesome>
@@ -114,7 +126,7 @@
     <core-ajax
       id="add"
       method="POST"
-      url="/api/youtubedls/add"
+      url="/api/media/add"
       headers='{"Authorization": "{{accessToken}}"}'
       handleAs="json"
       contentType="application/json"
@@ -194,7 +206,7 @@
         if (this.data[this.selectedIndex].state === 'working') return;
         switch (this.getOption().type) {
           case "play":
-            this.$.play.url="/api/mplayers/play/"+this.data[this.selectedIndex].youtubedl_id;
+            this.$.play.url="/api/mplayer/play/"+this.data[this.selectedIndex].mediaid;
             this.$.play.go();
             break;
           case "link":
@@ -202,12 +214,13 @@
             break;
           case "plus":
             this.$.add.body = JSON.stringify({
-              url: this.data[this.selectedIndex].url
+              url: this.data[this.selectedIndex].url,
+              target: 'youtubedl'
             });
             this.$.add.go();
             break;
           case "download":
-            var url="/api/youtubedls/download/"+this.data[this.selectedIndex].youtubedl_id+"?access_token="+this.accessToken;
+            var url="/api/media/download/"+this.data[this.selectedIndex].mediaid+"?access_token="+this.accessToken;
             window.open(url);
             break;
         }

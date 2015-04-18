@@ -6,6 +6,7 @@ module.exports = function misc(server) {
   var helpers = require('../helpers');
   var users = require('../users.json');
   var Youtubedl = server.models.Youtubedl;
+  var Media = server.models.Media;
 
   helpers.setMethodsVisibility(User, ['login', 'logout']);
   // User.disableRemoteMethod('create', true);
@@ -41,5 +42,11 @@ module.exports = function misc(server) {
   for (var i in users) {
     createUser(users[i].username, users[i].email, users[i].password, users[i].role, users[i].username==='admin');
   }
+
+  setTimeout(function(){
+    Media.destroyAll({state: 'working'}, function(err, info){
+      console.log('Removed working: '+info.count);
+    });
+  }, 3000);
 
 };

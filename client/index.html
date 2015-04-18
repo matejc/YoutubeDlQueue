@@ -49,7 +49,7 @@
         <core-ajax
           id="ping"
           method="GET"
-          url="/api/youtubedls/ping";
+          url="/api/misc/ping";
           headers='{"Authorization": "{{accessToken}}"}';
           handleAs="json"
           contentType="application/json"
@@ -67,6 +67,7 @@
             this.accessToken = this.accessTokenValue;
             this.$.ping.go();
             this.redirectFocus();
+            this.$.input.go('search');
           }).bind(this));
         },
         pingComplete: function(e) {

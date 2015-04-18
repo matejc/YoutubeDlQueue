@@ -48,7 +48,7 @@
     </style>
     <div id="container">
       <div id="heading"><span class="heading">YoutubeDlQueue</span></div>
-      <paper-input id="input" label="Search or enter url (press ESC to refresh)!" on-keydown="{{keydown}}" on-keyup="{{keyup}}">
+      <paper-input id="input" label="Search or enter url (ESC to refresh)" on-keydown="{{keydown}}" on-keyup="{{keyup}}">
       </paper-input>
       <core-collapse id="collapse">
         <template repeat="{{option in listOptions}}">
@@ -61,7 +61,7 @@
     <core-ajax
       id="search"
       method="POST"
-      url="/api/youtubedls/search"
+      url="/api/media/search"
       headers='{"Authorization": "{{accessToken}}"}'
       handleAs="json"
       contentType="application/json"
@@ -70,7 +70,7 @@
     <core-ajax
       id="add"
       method="POST"
-      url="/api/youtubedls/add"
+      url="/api/media/add"
       headers='{"Authorization": "{{accessToken}}"}'
       handleAs="json"
       contentType="application/json"
@@ -79,7 +79,7 @@
     <core-ajax
       id="stream"
       method="POST"
-      url="/api/mplayers/stream"
+      url="/api/mplayer/stream"
       handleAs="json"
       headers='{"Authorization": "{{accessToken}}"}'
       contentType="application/json"
@@ -93,7 +93,7 @@
       this.listOptions = [
         {name: "search", title: "History Search", selected: true},
         {name: "youtube", title: "Youtube Search"},
-        {name: "add", title: "Add from URL (pre download to history)"},
+        {name: "youtubedl", title: "Download from URL"},
         {name: "stream", title: "Play from URL (direct play)"}
       ];
       this.input_value = "";
@@ -118,7 +118,7 @@
     },
     searchResponse: function(e) {
       var target;
-      if (_.isEmpty(e.detail.response) || e.detail.response[0].youtubedl_id) {
+      if (_.isEmpty(e.detail.response) || e.detail.response[0].mediaid) {
         target = 'local'
         this.persist = e.detail.response;
       } else {
@@ -143,9 +143,10 @@
     },
     go: function(option) {
       switch (option) {
-        case "add":
+        case "youtubedl":
           this.$.add.body = JSON.stringify({
-            url: this.input_value
+            url: this.input_value,
+            target: 'youtubedl'
           });
           this.input_value = '';
           this.$.add.go();

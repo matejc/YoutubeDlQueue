@@ -100,7 +100,7 @@
     <core-ajax
       id="stop"
       method="GET"
-      url="/api/mplayers/stop"
+      url="/api/mplayer/stop"
       handleAs="json"
       headers='{"Authorization": "{{accessToken}}"}'
       contentType="application/json"
@@ -129,7 +129,7 @@
       <core-ajax
         id="pause"
         method="GET"
-        url="/api/mplayers/pause"
+        url="/api/mplayer/pause"
         handleAs="json"
         headers='{"Authorization": "{{accessToken}}"}'
         contentType="application/json"
@@ -154,15 +154,15 @@
       this.$.pause.go();
     },
     onVolumeUp: function(e) {
-      this.$.volume.url="/api/mplayers/volume/inc";
+      this.$.volume.url="/api/mplayer/volume/inc";
       this.$.volume.go();
     },
     onVolumeDown: function(e) {
-      this.$.volume.url="/api/mplayers/volume/dec";
+      this.$.volume.url="/api/mplayer/volume/dec";
       this.$.volume.go();
     },
     onVolumeMute: function(e) {
-      this.$.volume.url="/api/mplayers/volume/mute";
+      this.$.volume.url="/api/mplayer/volume/mute";
       this.$.volume.go();
     },
     onSignOut: function(e) {
