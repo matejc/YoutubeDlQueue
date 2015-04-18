@@ -7,7 +7,6 @@ module.exports = function(Media) {
   var errorDo = require('../../server/helpers').errorDo;
   var generateSlug = require('../../server/helpers').generateSlug;
   var Youtubedl = loopback.getModel('youtubedl');
-  var Misc = loopback.getModel('misc');
   var fs = require('fs');
   // var playlistOffset;
   //
