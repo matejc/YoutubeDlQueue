@@ -25,18 +25,21 @@ module.exports = function(Media) {
       case 'youtubedl':
         Youtubedl.download(req, res, body.url, function(err, obj) {
           Media.upsert(obj, function(err, info) {
-            if (err) return errorDo(err, 500);
+            if (err) return errorDo(err, 500, null, cb);
             console.log(info.state + ': ' + info.url);
           });
         });
         console.log('adding youtubedl: ' + body.url);
         break;
-      default:
+      case 'stream':
         addStream(body.url, function(err, info){
-          if (err) return errorDo(err, 500);
+          if (err) return errorDo(err, 500, null, cb);
           console.log(info.state + ': ' + info.url);
         });
         console.log('adding stream: ' + body.url);
+        break;
+      default:
+        return errorDo(null, 400, 'unknown target', cb);
     }
     cb(null, {statusCode: 200});
   };
@@ -73,7 +76,7 @@ module.exports = function(Media) {
         search(query.text, {
           maxResults: 10, startIndex: 1
         }, function(err, results) {
-          if (err) return errorDo(err, 500);
+          if (err) return errorDo(err, 500, null, cb);
           var result = [];
           for (var i in results) {
             result.push({
@@ -81,7 +84,7 @@ module.exports = function(Media) {
               url: results[i].url
             });
           }
-          cb(null, result);
+          cb(null, {statusCode: 200, result: result, target: 'youtube'});
         });
         break;
       default:
@@ -99,7 +102,7 @@ module.exports = function(Media) {
           where: (_.isEmpty(whereArray)?{}:{or: whereArray}),
           limit: 10, order: 'time DESC'
         }, function(err, objects) {
-          if (err) return errorDo(err, 500);
+          if (err) return errorDo(err, 500, null, cb);
           var result = [];
           for (var i=0; i<objects.length; i++) {
             result.push({
@@ -109,7 +112,7 @@ module.exports = function(Media) {
               url: objects[i].url
             });
           }
-          cb(null, result);
+          cb(null, {statusCode: 200, result: result, target: 'local'});
         });
     }
   };

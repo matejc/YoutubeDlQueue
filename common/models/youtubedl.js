@@ -23,7 +23,7 @@ module.exports = function(Youtubedl) {
   var download = function(url, cb) {
     var audio = youtubedl(url, ['--extract-audio', '--audio-format', 'm4a']);
     youtubedl.getInfo(url, [], function(err, info) {
-      if (err) return cb(err);
+      if (err) return errorDo(err, 500, null, cb);
       info._filepath = __dirname + '/../../storage/audio/' + info.id + '.m4a';
       info._filename = info._filename + '.m4a';
       var writeStream = fs.createWriteStream(info._filepath);

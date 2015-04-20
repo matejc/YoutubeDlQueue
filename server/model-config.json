@@ -42,5 +42,9 @@
   "misc": {
     "dataSource": "db",
     "public": true
+  },
+  "playlist": {
+    "dataSource": "db",
+    "public": true
   }
 }

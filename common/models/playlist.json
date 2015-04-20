@@ -1,16 +1,17 @@
 {
-  "name": "misc",
-  "plural": "misc",
+  "name": "playlist",
   "base": "PersistedModel",
   "idInjection": true,
   "properties": {
-    "key": {
+    "mediaid": {
       "type": "string",
-      "id": true,
       "required": true
     },
-    "value": {
-      "type": "any",
+    "order": {
+      "type": "number"
+    },
+    "name": {
+      "type": "string",
       "required": true
     }
   },
@@ -27,22 +28,7 @@
       "accessType": "*",
       "principalType": "ROLE",
       "principalId": "$authenticated",
-      "permission": "ALLOW",
-      "property": "get"
-    },
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "$authenticated",
-      "permission": "ALLOW",
-      "property": "set"
-    },
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "admin",
-      "permission": "ALLOW",
-      "property": "delete"
+      "permission": "ALLOW"
     }
   ],
   "methods": []

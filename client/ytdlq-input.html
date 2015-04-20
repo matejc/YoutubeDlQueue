@@ -76,15 +76,6 @@
       contentType="application/json"
       on-core-error="{{onAjaxError}}"
       on-core-response="{{addResponse}}"></core-ajax>
-    <core-ajax
-      id="stream"
-      method="POST"
-      url="/api/mplayer/stream"
-      handleAs="json"
-      headers='{"Authorization": "{{accessToken}}"}'
-      contentType="application/json"
-      on-core-error="{{onAjaxError}}"
-      on-core-response="{{streamResponse}}"></core-ajax>
   </template>
   <script>
   Polymer({
@@ -94,7 +85,7 @@
         {name: "search", title: "History Search", selected: true},
         {name: "youtube", title: "Youtube Search"},
         {name: "youtubedl", title: "Download from URL"},
-        {name: "stream", title: "Play from URL (direct play)"}
+        {name: "stream", title: "Add stream"}
       ];
       this.input_value = "";
       this.persist = [];
@@ -117,14 +108,11 @@
       setTimeout((function(){this.selectNext(0);}).bind(this), 350);
     },
     searchResponse: function(e) {
-      var target;
-      if (_.isEmpty(e.detail.response) || e.detail.response[0].mediaid) {
-        target = 'local'
-        this.persist = e.detail.response;
-      } else {
-        target = 'youtube'
+      var target = e.detail.response.target;
+      if (_.isEmpty(e.detail.response) || target === 'local') {
+        this.persist = e.detail.response.result;
       }
-      this.$.list.setData(e.detail.response, target, function(){});
+      this.$.list.setData(e.detail.response.result, target, function(){});
     },
     streamResponse: function(e) {
       this.addResponse(e);
@@ -169,10 +157,11 @@
           this.$.search.go();
           break;
         case "stream":
-          this.$.stream.body = JSON.stringify({
-            url: this.input_value
+          this.$.add.body = JSON.stringify({
+            url: this.input_value,
+            target: 'stream'
           });
-          this.$.stream.go();
+          this.$.add.go();
           break;
         default:
           throw new Error('Unknown Option');
@@ -183,7 +172,8 @@
         if (_.contains([38, 13], e.keyCode)) {
           e.preventDefault();
           return;
-        } else if (_.contains([9, 40], e.keyCode)) {
+        } else if (_.contains([9, 40], e.keyCode) && !_.isEmpty(this.$.list.data)) {
+        // } else if (_.contains([9, 40], e.keyCode)) {
           e.preventDefault();
           this.$.list.focus((function(){
             this.$.input.focus();

@@ -7,38 +7,47 @@ module.exports = function(Mplayer) {
   var volume = 50;
   var errorDo = require('../../server/helpers').errorDo;
 
+  Mplayer.emitter = new (require('events').EventEmitter)();
+
   function playerDo(action, obj, cb) {
     try {
       switch (action) {
-        case "stop":
+        case 'stop':
           if (player) {
             player.stop();
             player = null;
           }
+          Mplayer.emitter.emit(action);
           break;
-        case "play":
+        case 'play':
           player = new Player(obj.mediatype==='stream'?obj.url:obj.filepath);
-          player.on('end', function() {
-            console.log("end playback: " + obj.mediaid);
+          player.on('ended', function() {
+            Mplayer.emitter.emit('end', obj);
+            console.log('end playback: ' + obj.mediaid);
           });
           player.on('error', function() {
-            errorDo(undefined, 500, "Playback Error: "+obj.mediaid, cb);
+            Mplayer.emitter.emit('error', obj);
+            errorDo(undefined, 500, 'Playback Error: '+obj.mediaid, cb);
           });
           player.play({volume: volume});
+          Mplayer.emitter.emit(action, obj);
           break;
-        case "stream":
+        case 'stream':
           player = new Player(obj);
-          player.on('end', function() {
-            console.log("end playback: " + obj.mediaid);
+          player.on('ended', function() {
+            Mplayer.emitter.emit('end', obj);
+            console.log('end playback: ' + obj.mediaid);
           });
           player.on('error', function() {
-            errorDo(undefined, 500, "Stream Playback Error: "+obj.mediaid, cb);
+            Mplayer.emitter.emit('error', obj);
+            errorDo(undefined, 500, 'Stream Playback Error: '+obj.mediaid, cb);
           });
+          Mplayer.emitter.emit(action, obj);
           player.play({volume: volume});
           break;
-        case "volume":
+        case 'volume':
           switch (obj) {
-            case "inc":
+            case 'inc':
               volume = volume + 10;
               if (volume > 100) {
                 volume = 100;
@@ -47,7 +56,7 @@ module.exports = function(Mplayer) {
                 player.setVolume(volume);
               }
               break;
-            case "dec":
+            case 'dec':
               volume = volume - 10;
               if (volume < 0) {
                 volume = 0;
@@ -56,17 +65,19 @@ module.exports = function(Mplayer) {
                 player.setVolume(volume);
               }
               break;
-            case "mute":
+            case 'mute':
               if (player) {
                 player.mute();
               }
               break;
           }
+          Mplayer.emitter.emit('volume', obj, volume);
           break;
-        case "pause":
+        case 'pause':
           if (player) {
             player.toggle();
           }
+          Mplayer.emitter.emit('pause');
           break;
         default:
           break;
@@ -81,11 +92,13 @@ module.exports = function(Mplayer) {
     loopback.getModel('media').findOne({
       where: {mediaid: mediaid}
     }, function(err, o) {
-      if (err) return errorDo(err);
+      if (err) return errorDo(err, 500, null, cb);
       playerDo('stop');
-      playerDo('play', o);
+      setTimeout(function() {
+        playerDo('play', o);
+      }, 300);
     });
-    return cb(null, {statusCode: 200});
+    return cb(null, {statusCode: 200, mediaid: mediaid});
   };
   Mplayer.play.shared = true;
   Mplayer.play.accepts = [
@@ -103,7 +116,9 @@ module.exports = function(Mplayer) {
       return errorDo(undefined, 400, 'Invalid URI', cb);
     }
     playerDo('stop');
-    playerDo('stream', url);
+    setTimeout(function() {
+      playerDo('stream', url);
+    }, 300);
     return cb(undefined, {statusCode: 200});
   };
   Mplayer.stream.shared = true;
