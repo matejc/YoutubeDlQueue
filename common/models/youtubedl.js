@@ -31,7 +31,7 @@ module.exports = function(Youtubedl) {
       cb(null, {
         url: url,
         title: info.title,
-        mediatype: info.mediatype,
+        mediatype: 'youtubedl',
         mediaid: info.id,
         filename: info._filename,
         filepath: info._filepath,

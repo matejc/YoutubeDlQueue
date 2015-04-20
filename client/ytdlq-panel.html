@@ -6,7 +6,7 @@
     <style>
       #container {
         width: 4em;
-        height: 17em;
+        height: 22.4em;
         position: absolute;
         top: 2em;
         left: 0;
@@ -85,6 +85,8 @@
       <ytdlq-login id="login" class="{{ {login: showLoginForm} | tokenList }}"></ytdlq-login>
 
       <div id="options" class="{{ {login: showLoginForm} | tokenList }}">
+        <font-awesome icon="play" size="2x" on-click="{{onPlay}}"></font-awesome>
+        <font-awesome icon="step-forward" size="2x" on-click="{{onNext}}"></font-awesome>
         <font-awesome icon="pause" size="2x" on-click="{{onPause}}"></font-awesome>
         <font-awesome icon="stop" size="2x" on-click="{{onStop}}"></font-awesome>
         <font-awesome icon="volume-up" size="2x" on-click="{{onVolumeUp}}"></font-awesome>
@@ -126,15 +128,43 @@
       on-core-error="{{onError}}"
       on-core-response="{{volumeResponse}}"></core-ajax>
 
-      <core-ajax
-        id="pause"
-        method="GET"
-        url="/api/mplayer/pause"
-        handleAs="json"
-        headers='{"Authorization": "{{accessToken}}"}'
-        contentType="application/json"
-        on-core-error="{{onAjaxError}}"
-        on-core-response="{{pauseResponse}}"></core-ajax>
+    <core-ajax
+      id="pause"
+      method="GET"
+      url="/api/mplayer/pause"
+      handleAs="json"
+      headers='{"Authorization": "{{accessToken}}"}'
+      contentType="application/json"
+      on-core-error="{{onAjaxError}}"
+      on-core-response="{{pauseResponse}}"></core-ajax>
+
+    <core-ajax
+      id="playlistplay"
+      method="GET"
+      headers='{"Authorization": "{{accessToken}}"}'
+      handleAs="json"
+      contentType="application/json"
+      on-core-error="{{onError}}"
+      on-core-response="{{playlistplayResponse}}"></core-ajax>
+
+    <core-ajax
+      id="playlistnext"
+      method="GET"
+      headers='{"Authorization": "{{accessToken}}"}'
+      handleAs="json"
+      contentType="application/json"
+      on-core-error="{{onError}}"
+      on-core-response="{{nextResponse}}"></core-ajax>
+
+    <core-ajax
+      id="playlistprev"
+      method="GET"
+      headers='{"Authorization": "{{accessToken}}"}'
+      handleAs="json"
+      contentType="application/json"
+      on-core-error="{{onError}}"
+      on-core-response="{{prevResponse}}"></core-ajax>
+
   </template>
   <script>
   Polymer({
@@ -165,6 +195,18 @@
       this.$.volume.url="/api/mplayer/volume/mute";
       this.$.volume.go();
     },
+    onPlay: function(e) {
+      this.$.playlistplay.url="/api/playlists/play/one";
+      this.$.playlistplay.go();
+    },
+    onNext: function(e) {
+      this.$.playlistnext.url="/api/playlists/next/one";
+      this.$.playlistnext.go();
+    },
+    onPrev: function(e) {
+      this.$.playlistprev.url="/api/playlists/prev/one";
+      this.$.playlistprev.go();
+    },
     onSignOut: function(e) {
       this.$.logout.go();
     },
@@ -184,6 +226,15 @@
       this.fire('core-signal', {name: "message", data: e.detail.response});
     },
     pauseResponse: function(e) {
+      this.fire('core-signal', {name: "message", data: e.detail.response});
+    },
+    nextResponse: function(e) {
+      this.fire('core-signal', {name: "message", data: e.detail.response});
+    },
+    prevResponse: function(e) {
+      this.fire('core-signal', {name: "message", data: e.detail.response});
+    },
+    playlistplayResponse: function(e) {
       this.fire('core-signal', {name: "message", data: e.detail.response});
     }
   });

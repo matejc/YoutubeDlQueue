@@ -89,9 +89,9 @@
               </div>
             </template>
             <template if="{{target==='local'}}">
-              <template if="{{model.state == 'done' && model.playlistindex}}">
-                <font-awesome icon="check" size="lg"></font-awesome>
-                <!-- <div class="playlistindex {{ {selected: selected} | tokenList }}"><span>{{model.playlistindex}}</span></div> -->
+              <template if="{{model.state == 'done' && model.playlistindex!==undefined}}">
+                <!-- <font-awesome icon="check" size="lg"></font-awesome> -->
+                <div class="playlistindex {{ {selected: selected} | tokenList }}"><span>{{model.playlistindex}}</span></div>
               </template>
               <template if="{{model.state == 'timeout'}}">
                 <font-awesome icon="clock-o" size="lg"></font-awesome>
@@ -108,6 +108,7 @@
                   <font-awesome icon="{{localOptions[0].type}}" size="lg" class="{{ {selected: optionIndex===0 && selected} | tokenList }}" data-index="0" on-click="{{keydown}}"></font-awesome>
                   <font-awesome icon="{{localOptions[1].type}}" size="lg" class="{{ {selected: optionIndex===1 && selected} | tokenList }}" data-index="1" on-click="{{keydown}}"></font-awesome>
                   <font-awesome icon="{{localOptions[2].type}}" size="lg" class="{{ {selected: optionIndex===2 && selected} | tokenList }}" data-index="2" on-click="{{keydown}}"></font-awesome>
+                  <font-awesome icon="{{localOptions[3].type}}" size="lg" class="{{ {selected: optionIndex===3 && selected} | tokenList }}" data-index="3" on-click="{{keydown}}"></font-awesome>
                 </div>
               </template>
             </template>
@@ -132,6 +133,32 @@
       contentType="application/json"
       on-core-error="{{onAjaxError}}"
       on-core-response="{{addResponse}}"></core-ajax>
+    <core-ajax
+      id="playlistadd"
+      method="POST"
+      url="/api/playlists/add"
+      headers='{"Authorization": "{{accessToken}}"}'
+      handleAs="json"
+      contentType="application/json"
+      on-core-error="{{onAjaxError}}"
+      on-core-response="{{response}}"></core-ajax>
+    <core-ajax
+      id="playlistnext"
+      method="GET"
+      headers='{"Authorization": "{{accessToken}}"}'
+      handleAs="json"
+      contentType="application/json"
+      on-core-error="{{onAjaxError}}"
+      on-core-response="{{response}}"></core-ajax>
+    <core-ajax
+      id="playlistlist"
+      method="GET"
+      url="/api/playlists/list/one"
+      headers='{"Authorization": "{{accessToken}}"}'
+      handleAs="json"
+      contentType="application/json"
+      on-core-error="{{onAjaxError}}"
+      on-core-response="{{onPlaylistListResponse}}"></core-ajax>
   </template>
   <script>
   Polymer({
@@ -142,7 +169,8 @@
       this.localOptions = [
         { type: "play" },
         { type: "link" },
-        { type: "download" }
+        { type: "download" },
+        { type: "plus-circle" }
       ];
       this.youtubeOptions = [
         { type: "link" },
@@ -222,6 +250,13 @@
           case "download":
             var url="/api/media/download/"+this.data[this.selectedIndex].mediaid+"?access_token="+this.accessToken;
             window.open(url);
+            break;
+          case 'plus-circle':
+            this.$.playlistadd.body = JSON.stringify({
+              mediaid: this.data[this.selectedIndex].mediaid,
+              name: 'one'
+            });
+            this.$.playlistadd.go();
             break;
         }
       } else if (_.contains([9, 40], e.keyCode)) {  // next
