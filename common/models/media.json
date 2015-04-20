@@ -5,8 +5,7 @@
   "idInjection": true,
   "properties": {
     "mediatype": {
-      "type": "string",
-      "required": true
+      "type": "string"
     },
     "mediaid": {
       "type": "string",
@@ -14,8 +13,7 @@
       "required": true
     },
     "url": {
-      "type": "string",
-      "required": true
+      "type": "string"
     },
     "filepath": {
       "type": "string"
@@ -31,10 +29,6 @@
     },
     "state": {
       "type": "string",
-      "required": true
-    },
-    "index": {
-      "type": "number",
       "required": true
     }
   },
