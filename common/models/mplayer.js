@@ -48,7 +48,7 @@ module.exports = function(Mplayer) {
         case 'volume':
           switch (obj) {
             case 'inc':
-              volume = volume + 10;
+              volume = volume + 3;
               if (volume > 100) {
                 volume = 100;
               }
@@ -57,7 +57,7 @@ module.exports = function(Mplayer) {
               }
               break;
             case 'dec':
-              volume = volume - 10;
+              volume = volume - 3;
               if (volume < 0) {
                 volume = 0;
               }
