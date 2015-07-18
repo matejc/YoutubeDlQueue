@@ -142,23 +142,6 @@
       contentType="application/json"
       on-core-error="{{onAjaxError}}"
       on-core-response="{{response}}"></core-ajax>
-    <core-ajax
-      id="playlistnext"
-      method="GET"
-      headers='{"Authorization": "{{accessToken}}"}'
-      handleAs="json"
-      contentType="application/json"
-      on-core-error="{{onAjaxError}}"
-      on-core-response="{{response}}"></core-ajax>
-    <core-ajax
-      id="playlistlist"
-      method="GET"
-      url="/api/playlists/list/one"
-      headers='{"Authorization": "{{accessToken}}"}'
-      handleAs="json"
-      contentType="application/json"
-      on-core-error="{{onAjaxError}}"
-      on-core-response="{{onPlaylistListResponse}}"></core-ajax>
   </template>
   <script>
   Polymer({

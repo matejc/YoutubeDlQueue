@@ -1,0 +1,124 @@
+<link rel="import" href="components/core-localstorage/core-localstorage.html">
+
+<polymer-element name="ytdlq-playlist" attributes="accessToken">
+  <template>
+    <style>
+    :host {
+      display: block;
+      position: relative;
+      background-color: white;
+    }
+    span.label {
+      font-family: 'RobotoDraft', sans-serif;
+      font-size: 50%;
+      display: inline-block;
+      width: 450px;
+    }
+    span.label.minusone {
+      color: #6079c9;
+    }
+    span.label.one {
+      color: #4059a9;
+    }
+    span.label.two {
+      color: #6079c9;
+    }
+    span.label.three {
+      color: #8099e9;
+    }
+    font-awesome:hover {
+      color: #00ff00;
+    }
+    font-awesome:active {
+      color: red;
+    }
+    </style>
+    <div id="container">
+        <template if="{{ tracks[index-1].title }}">
+          <span class="label minusone">
+            <font-awesome icon="minus-circle" data-mediaid="{{tracks[index-1].mediaid}}" on-click="{{deleteByMediaId}}"></font-awesome>
+            {{ tracks[index-1].title }}
+          </span>
+        </template>
+        <template if="{{ tracks[index].title }}">
+          <span class="label one">
+            <font-awesome icon="minus-circle" data-mediaid="{{tracks[index].mediaid}}" on-click="{{deleteByMediaId}}"></font-awesome>
+            {{ tracks[index].title }}
+            <font-awesome icon="chevron-left"></font-awesome>
+          </span>
+        </template>
+        <template if="{{ tracks[index+1].title }}">
+          <span class="label two">
+            <font-awesome icon="minus-circle" data-mediaid="{{tracks[index+1].mediaid}}" on-click="{{deleteByMediaId}}"></font-awesome>
+            {{ tracks[index+1].title }}
+          </span>
+        </template>
+        <template if="{{ tracks[index+2].title }}">
+          <span class="label three">
+            <font-awesome icon="minus-circle" data-mediaid="{{tracks[index+2].mediaid}}" on-click="{{deleteByMediaId}}"></font-awesome>
+            {{ tracks[index+2].title }}
+          </span>
+        </template>
+    </div>
+
+    <core-ajax
+      id="list"
+      method="get"
+      url="/api/playlists/list/one"
+      headers='{"Authorization": "{{accessToken}}"}'
+      handleAs="json"
+      contentType="application/json"
+      on-core-error="{{onAjaxError}}"
+      on-core-response="{{listResponse}}"></core-ajax>
+    <core-ajax
+      id="delete"
+      method="get"
+      headers='{"Authorization": "{{accessToken}}"}'
+      handleAs="json"
+      contentType="application/json"
+      on-core-error="{{onAjaxError}}"
+      on-core-response="{{getList}}"></core-ajax>
+  </template>
+  <script>
+  Polymer({
+    ready: function() {
+      this.tracks = [];
+      this.index = 0;
+      setInterval((function(){
+        this.getList.bind(this)();
+      }).bind(this), 3000);
+    },
+    getList: function() {
+      this.$.list.go();
+    },
+    listResponse: function(e) {
+      var res = e.detail.response;
+      if (res && res.tracks) {
+        this.index = res.index || 0;
+        this.tracks = res.tracks;
+      }
+    },
+    deleteByMediaId: function(e) {
+      if (e.button !== 0) {
+        return;
+      }
+      var mediaId = e.target.getAttribute("data-mediaid");
+      if (mediaId) {
+        this.$.delete.url="/api/playlists/delete/one/"+mediaId;
+        this.$.delete.go();
+      }
+    },
+    onAjaxError: function(e) {
+      var message = e.detail.response.response.error;
+      if (e.detail.response.statusCode == 401) {
+        message = null;
+      } else if (e.detail.response.statusCode == 400) {
+        message = 'Bad Request';
+      }
+      if (message) {
+        this.fire('core-signal', {name: "message", data: message});
+      }
+    },
+  });
+  </script>
+</polymer-element>

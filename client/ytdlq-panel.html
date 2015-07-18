@@ -6,7 +6,7 @@
     <style>
       #container {
         width: 4em;
-        height: 22.4em;
+        height: 25em;
         position: absolute;
         top: 2em;
         left: 0;
@@ -87,6 +87,7 @@
       <div id="options" class="{{ {login: showLoginForm} | tokenList }}">
         <font-awesome icon="play" size="2x" on-click="{{onPlay}}"></font-awesome>
         <font-awesome icon="step-forward" size="2x" on-click="{{onNext}}"></font-awesome>
+        <font-awesome icon="step-backward" size="2x" on-click="{{onPrev}}"></font-awesome>
         <font-awesome icon="pause" size="2x" on-click="{{onPause}}"></font-awesome>
         <font-awesome icon="stop" size="2x" on-click="{{onStop}}"></font-awesome>
         <font-awesome icon="volume-up" size="2x" on-click="{{onVolumeUp}}"></font-awesome>

@@ -3,6 +3,7 @@
 <link rel="import" href="components/paper-toast/paper-toast.html">
 <link rel="import" href="components/core-localstorage/core-localstorage.html">
 <link rel="import" href="ytdlq-list.html">
+<link rel="import" href="ytdlq-playlist.html">
 
 <polymer-element name="ytdlq-input" attributes="accessToken">
   <template>
@@ -48,6 +49,7 @@
     </style>
     <div id="container">
       <div id="heading"><span class="heading">YoutubeDlQueue</span></div>
+      <ytdlq-playlist id="playlist" accessToken="{{accessToken}}"></ytdlq-playlist>
       <paper-input id="input" label="Search or enter url (ESC to refresh)" on-keydown="{{keydown}}" on-keyup="{{keyup}}">
       </paper-input>
       <core-collapse id="collapse">
@@ -83,7 +85,7 @@
       this.selectedOption = 0;
       this.listOptions = [
         {name: "search", title: "History Search", selected: true},
-        {name: "youtube", title: "Youtube Search"},
+        // {name: "youtube", title: "Youtube Search"},
         {name: "youtubedl", title: "Download from URL"},
         {name: "stream", title: "Add stream"}
       ];

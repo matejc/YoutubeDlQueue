@@ -3,14 +3,16 @@
   "base": "PersistedModel",
   "idInjection": true,
   "properties": {
-    "mediaid": {
+    "name": {
       "type": "string",
       "required": true
     },
-    "order": {
-      "type": "number"
+    "tracks": {
+      "type": [
+        "string"
+      ]
     },
-    "name": {
+    "user": {
       "type": "string",
       "required": true
     }

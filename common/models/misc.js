@@ -25,7 +25,7 @@ module.exports = function(Misc) {
         value: body.value
       }, function(err, o) {
         if (err) return errorDo(err, 400, null, cb);
-        return cb(null, {statusCode: 200});
+        return cb(null, {statusCode: 200, result: body.value});
       });
     } else {
       return errorDo(null, 400, 'invalid key or value', cb);

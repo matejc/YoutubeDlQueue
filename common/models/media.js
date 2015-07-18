@@ -2,6 +2,7 @@ module.exports = function(Media) {
   var loopback = require('loopback');
   var validUrl = require('valid-url');
   var _ = require('underscore');
+  var Promise = require('bluebird');
   var setMethodsVisibility = require('../../server/helpers')
     .setMethodsVisibility;
   var errorDo = require('../../server/helpers').errorDo;
@@ -103,16 +104,21 @@ module.exports = function(Media) {
           limit: 10, order: 'time DESC'
         }, function(err, objects) {
           if (err) return errorDo(err, 500, null, cb);
-          var result = [];
-          for (var i=0; i<objects.length; i++) {
+
+          new Promise.reduce(objects, function (result, object) {
             result.push({
-              title: objects[i].title,
-              state: objects[i].state,
-              mediaid: objects[i].mediaid,
-              url: objects[i].url
+              title: object.title,
+              state: object.state,
+              mediaid: object.mediaid,
+              url: object.url
             });
-          }
-          cb(null, {statusCode: 200, result: result, target: 'local'});
+            return result;
+          }, []).then(function(result){
+            cb(null, {statusCode: 200, result: result, target: 'local'});
+          }).catch(function(err) {
+            errorDo(err, 500, null, cb);
+          });
+
         });
     }
   };
