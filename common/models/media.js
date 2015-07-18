@@ -48,7 +48,7 @@ module.exports = function(Media) {
   Media.add.accepts = [
     {arg: 'req',  type: 'object',  'http': {source: 'req'}},
     {arg: 'res',  type: 'object',  'http': {source: 'res'}},
-    {arg: 'body', type: 'string',  'http': {source: 'body'}}
+    {arg: 'body', type: 'object',  'http': {source: 'body'}}
   ];
   Media.add.http = {path: '/add', verb: 'post'};
   Media.add.returns = {root: true};

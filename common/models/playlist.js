@@ -49,17 +49,17 @@ module.exports = function(Playlist) {
       if (err) return errorDo(err, 400, null, cb);
       var newValue;
       if (_.isNull(index) && offset >= 1) {
-        newValue = null;
+        newValue = offset;
       } else if (_.isNull(index) && offset <= -1) {
         newValue = tracks.length-1;
       } else if (_.isNumber(index)) {
         newValue = index + offset;
-        if (newValue >= tracks.length) {
-          newValue = tracks.length-1;
-        } else if (newValue < 0) {
-          newValue = 0;
-        }
       } else {
+        newValue = 0;
+      }
+      if (newValue >= tracks.length) {
+        return errorDo(null, 400, 'end of playlist', cb);
+      } else if (newValue < 0) {
         newValue = 0;
       }
       Misc.set({
@@ -181,10 +181,13 @@ module.exports = function(Playlist) {
         }, function(err, playlist) {
           if (err) return errorDo(err, 400, null, cb);
           var tracks = playlist.tracks;
-          if (!_.isArray(playlist.tracks)) {
+          if (!_.isArray(tracks)) {
             tracks = [];
           }
-          if (_.indexOf(playlist.tracks, media.mediaid) == -1) {
+          if (_.isEmpty(tracks)) {
+            Misc.set({key: body.name, value: 0}, function() {});
+          }
+          if (_.indexOf(tracks, media.mediaid) == -1) {
             tracks.push(''+media.mediaid);
             playlist.updateAttribute('tracks', tracks, function(err) {
               if (err) return errorDo(err, 400, null, cb);
@@ -224,6 +227,12 @@ module.exports = function(Playlist) {
         if (i == value) {
           Mplayer.stop(function() {});
         }
+        if (value == tracks.length) {
+          console.log("tracks.length-1", tracks.length-1)
+          Misc.set({key: name, value: tracks.length-1}, function(err) {
+            if (err) { console.error(err); }
+          });
+        }
       });
       playlist.updateAttribute('tracks', tracks, function(err) {
         if (err) return errorDo(err, 400, null, cb);
@@ -244,7 +253,7 @@ module.exports = function(Playlist) {
       name: name
     }, function(err, playlist) {
       if (err) return errorDo(err, 400, null, cb);
-      if (!playlist) return errorDo(null, 400, 'playlist not found', cb);
+      if (!playlist) return cb(null, {statusCode: 200});
 
       new Promise.reduce(playlist.tracks, function (result, mediaid) {
         return new Promise(function(resolve, reject) {

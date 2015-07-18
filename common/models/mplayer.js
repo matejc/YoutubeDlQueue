@@ -29,7 +29,7 @@ module.exports = function(Mplayer) {
             Mplayer.emitter.emit('error', obj);
             errorDo(undefined, 500, 'Playback Error: '+obj.mediaid, cb);
           });
-          player.play({volume: volume});
+          player.play({volume: volume, args: ['-novideo']});
           Mplayer.emitter.emit(action, obj);
           break;
         case 'stream':
@@ -43,7 +43,7 @@ module.exports = function(Mplayer) {
             errorDo(undefined, 500, 'Stream Playback Error: '+obj.mediaid, cb);
           });
           Mplayer.emitter.emit(action, obj);
-          player.play({volume: volume});
+          player.play({volume: volume, args: ['-novideo']});
           break;
         case 'volume':
           switch (obj) {
@@ -125,7 +125,7 @@ module.exports = function(Mplayer) {
   Mplayer.stream.accepts = [
     {arg: 'req',  type: 'object',  'http': {source: 'req'}},
     {arg: 'res',  type: 'object',  'http': {source: 'res'}},
-    {arg: 'body',  type: 'string',  'http': {source: 'body'}}
+    {arg: 'body',  type: 'object',  'http': {source: 'body'}}
   ];
   Mplayer.stream.http = {path: '/stream', verb: 'post'};
   Mplayer.stream.returns = {root: true};
