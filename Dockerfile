@@ -17,7 +17,6 @@ WORKDIR /youtubedlqueue
 RUN rm -rf /youtubedlqueue/node_packages
 
 RUN npm install --unsafe-perm strongloop
-RUN openssl req -new -x509 -nodes -keyout server/private/privatekey.pem -out server/private/certificate.pem -subj "/C=GB/ST=London/L=London/O=Global Security/OU=IT Department/CN=example.xyz"
 RUN npm install --production
 
 # Start everything

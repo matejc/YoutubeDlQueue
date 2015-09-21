@@ -1,27 +1,13 @@
 var loopback = require('loopback');
 var boot = require('loopback-boot');
 
-var https = require('https');
-var sslConfig = require('./ssl-config');
-
-var options = {
-  key: sslConfig.privateKey,
-  cert: sslConfig.certificate
-};
-
 var app = module.exports = loopback();
 
 app.start = function() {
   // start the web server
-  // return app.listen(function() {
-  //   app.emit('started');
-  //   console.log('Web server listening at: %s', app.get('url'));
-  // });
-
-  return https.createServer(options, app).listen(app.get('port'), function() {
-    var baseUrl = 'https://' + app.get('host') + ':' + app.get('port');
-    app.emit('started', baseUrl);
-    console.log('LoopBack server listening @ %s%s', baseUrl, '/');
+  return app.listen(function() {
+    app.emit('started');
+    console.log('Web server listening at: %s', app.get('url'));
   });
 };
 
